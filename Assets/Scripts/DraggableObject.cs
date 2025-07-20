@@ -17,6 +17,10 @@ public class DraggableObject : MonoBehaviour
     {
         originalPosition = transform.position;
         speed = Random.Range(minSpeed, maxSpeed);
+        
+        // Подписываемся на события InputManager
+        InputManager.Instance.OnDragStart += HandleDragStart;
+        InputManager.Instance.OnDragEnd += HandleDragEnd;
     }
     
     private void Update()
@@ -31,7 +35,7 @@ public class DraggableObject : MonoBehaviour
             
             float distance = Vector3.Distance(transform.position, _currentTargetPosition);
             
-            Debug.Log($"Distance: {distance}");
+           // Debug.Log($"Distance: {distance}");
             // Проверка достижения правого края (Death Zone)
             if (distance < 1f) // Замените на координату вашей Death Zone
             {
@@ -44,6 +48,7 @@ public class DraggableObject : MonoBehaviour
     
     private void OnMouseDown()
     {
+        Debug.Log("OnMouseDown");
         isDragging = true;
     }
     
@@ -79,6 +84,7 @@ public class DraggableObject : MonoBehaviour
     
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("OnTriggerEnter2D");
         if (other.CompareTag("CorrectSlot"))
         {
             isCorrectSlot = true;
@@ -90,6 +96,24 @@ public class DraggableObject : MonoBehaviour
             GameManager.Instance.LoseLife();
             Destroy(gameObject);
             // Здесь можно добавить эффект взрыва
+        }
+    }
+    
+    private void HandleDragStart(GameObject draggedObject)
+    {
+        if (draggedObject == gameObject)
+        {
+            Debug.Log(gameObject.name + " was dragged");
+            // Можно добавить дополнительные действия при начале перетаскивания
+        }
+    }
+
+    private void HandleDragEnd(GameObject droppedObject)
+    {
+        if (droppedObject == gameObject && !isCorrectSlot)
+        {
+            isReturning = true;
+            StartCoroutine(ReturnToOriginalPosition());
         }
     }
 

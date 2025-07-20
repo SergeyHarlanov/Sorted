@@ -20,6 +20,11 @@ public class ObjectSpawner : MonoBehaviour
             SpawnObject();
             timer = 0f;
            // spawnInterval = Random.Range(1f, 3f); // Случайный интервал между спавном
+
+           if (TestingManager.Instance.IsOneSpawn)
+           {
+               spawnInterval = 999;
+           }
         }
     }
     
