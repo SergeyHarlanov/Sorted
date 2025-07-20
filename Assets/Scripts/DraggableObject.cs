@@ -11,62 +11,62 @@ public class DraggableObject : MonoBehaviour
     public float minSpeed = 1f;
     public float maxSpeed = 5f;
 
-
     private Vector3 _currentTargetPosition;
+    
+    // Ссылка на камеру для преобразования координат
+    private Camera mainCamera;
+
     private void Start()
     {
+        mainCamera = Camera.main;
         originalPosition = transform.position;
         speed = Random.Range(minSpeed, maxSpeed);
         
         // Подписываемся на события InputManager
         InputManager.Instance.OnDragStart += HandleDragStart;
         InputManager.Instance.OnDragEnd += HandleDragEnd;
+        InputManager.Instance.OnDragCollectEnd += HandleDragCollectEnd;
+    }
+
+    private void HandleDragCollectEnd(GameObject draggedobject)
+    {
+        Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        // Хорошая практика - отписываться от событий при уничтожении объекта
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnDragStart -= HandleDragStart;
+            InputManager.Instance.OnDragEnd -= HandleDragEnd;
+            InputManager.Instance.OnDragCollectEnd -= HandleDragCollectEnd;
+        }
     }
     
     private void Update()
     {
-        if (!isDragging && !isReturning)
+        if (isDragging)
         {
-            Vector3 currentPosition = (_currentTargetPosition)
-                - transform.position;
-            currentPosition.Normalize();
-            
-            transform.Translate(currentPosition * speed * Time.deltaTime);
+            // Если объект перетаскивается, он следует за курсором мыши
+            Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            mousePosition.z = 0;
+            transform.position = mousePosition;
+        }
+        else if (!isReturning)
+        {
+            // Логика автоматического движения слева направо
+            Vector3 direction = (_currentTargetPosition - transform.position).normalized;
+            transform.Translate(direction * speed * Time.deltaTime);
             
             float distance = Vector3.Distance(transform.position, _currentTargetPosition);
             
-           // Debug.Log($"Distance: {distance}");
             // Проверка достижения правого края (Death Zone)
-            if (distance < 1f) // Замените на координату вашей Death Zone
+            if (distance < 0.1f)
             {
-              //  _isEndSide = !_isEndSide;
                 GameManager.Instance.LoseLife();
                 Destroy(gameObject);
             }
-        }
-    }
-    
-    private void OnMouseDown()
-    {
-        Debug.Log("OnMouseDown");
-        isDragging = true;
-    }
-    
-    private void OnMouseDrag()
-    {
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePosition.z = 0;
-        transform.position = mousePosition;
-    }
-    
-    private void OnMouseUp()
-    {
-        isDragging = false;
-        
-        if (!isCorrectSlot)
-        {
-            isReturning = true;
-            StartCoroutine(ReturnToOriginalPosition());
         }
     }
     
@@ -80,11 +80,16 @@ public class DraggableObject : MonoBehaviour
         
         transform.position = originalPosition;
         isReturning = false;
+        // После возврата объект должен снова начать двигаться
+        isDragging = false; 
     }
     
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("OnTriggerEnter2D");
+        // Эта логика теперь должна работать правильно
+        if (!isDragging) return; // Срабатывать только во время перетаскивания
+
+        Debug.Log("OnTriggerEnter2D с " + other.name);
         if (other.CompareTag("CorrectSlot"))
         {
             isCorrectSlot = true;
@@ -103,17 +108,28 @@ public class DraggableObject : MonoBehaviour
     {
         if (draggedObject == gameObject)
         {
-            Debug.Log(gameObject.name + " was dragged");
-            // Можно добавить дополнительные действия при начале перетаскивания
+            Debug.Log(gameObject.name + " был взят.");
+            isDragging = true;
+            isReturning = false;
+            // Сохраняем позицию, с которой начали тащить
+            originalPosition = transform.position;
+            GetComponent<BoxCollider2D>().enabled = false;
         }
     }
 
     private void HandleDragEnd(GameObject droppedObject)
     {
-        if (droppedObject == gameObject && !isCorrectSlot)
+        if (droppedObject == gameObject)
         {
-            isReturning = true;
-            StartCoroutine(ReturnToOriginalPosition());
+            Debug.Log(gameObject.name + " был отпущен.");
+            isDragging = false;
+            
+            if (!isCorrectSlot)
+            {
+                isReturning = true;
+                StartCoroutine(ReturnToOriginalPosition());
+            }
+            GetComponent<BoxCollider2D>().enabled = true;
         }
     }
 

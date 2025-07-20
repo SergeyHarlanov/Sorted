@@ -11,6 +11,7 @@ public class InputManager : MonoBehaviour
     // События
     public event DragEvent OnDragStart;
     public event DragEvent OnDragEnd;
+    public event DragEvent OnDragCollectEnd;
     public event DragEvent OnDrag;
     
     private GameObject currentDraggedObject;
@@ -92,11 +93,26 @@ public class InputManager : MonoBehaviour
     {
         if (currentDraggedObject == null) return;
         
-        // Вызываем событие окончания перетаскивания
-        OnDragEnd?.Invoke(currentDraggedObject);
+        RaycastHit2D hit = Physics2D.Raycast(
+            mainCamera.ScreenToWorldPoint(Input.mousePosition), 
+            Vector2.zero);
+
+        if (hit.collider != null && hit.collider.gameObject.GetComponent<CorrectSlot>() != null)
+        {
+            OnDragCollectEnd?.Invoke(currentDraggedObject);
         
-        currentDraggedObject = null;
-        isDragging = false;
+            currentDraggedObject = null;
+            isDragging = false;
+            
+        }
+        else
+        {
+            // Вызываем событие окончания перетаскивания
+            OnDragEnd?.Invoke(currentDraggedObject);
+        
+            currentDraggedObject = null;
+            isDragging = false;
+        }
     }
 
     // Метод для проверки, происходит ли сейчас перетаскивание
