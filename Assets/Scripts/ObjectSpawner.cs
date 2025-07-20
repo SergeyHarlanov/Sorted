@@ -1,0 +1,37 @@
+using UnityEngine;
+
+public class ObjectSpawner : MonoBehaviour
+{
+    public GameObject[] objectPrefabs;
+    public float spawnInterval = 2f;
+    public Transform _startZone; // Spawn Zone (y=350)
+    public Transform _endZone; // Spawn Zone (y=350)
+    
+    private float timer = 0f;
+    
+    private void Update()
+    {
+        timer += Time.deltaTime;
+        
+        if (timer >= spawnInterval)
+        {
+            SpawnObject();
+            timer = 0f;
+            spawnInterval = Random.Range(1f, 3f); // Случайный интервал между спавном
+        }
+    }
+    
+    private void SpawnObject()
+    {
+        if (objectPrefabs.Length == 0) return;
+        
+        int randomIndex = Random.Range(0, objectPrefabs.Length);
+        GameObject newObject = Instantiate(objectPrefabs[randomIndex], _startZone.position, Quaternion.identity);
+        DraggableObject draggableObject = newObject.GetComponent<DraggableObject>();
+        
+        draggableObject
+        // Настройка начальной позиции с небольшим случайным смещением
+        float randomYOffset = Random.Range(-2f, 2f);
+        newObject.transform.position += new Vector3(0, randomYOffset, 0);
+    }
+}
