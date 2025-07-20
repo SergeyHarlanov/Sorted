@@ -12,28 +12,32 @@ public class DraggableObject : MonoBehaviour
     public float maxSpeed = 5f;
 
 
-    private Vector3 _forwardDirection;
-    private Vector3 _endDirection;
+    private Vector3 _currentTargetPosition;
     private void Start()
     {
         originalPosition = transform.position;
         speed = Random.Range(minSpeed, maxSpeed);
-        
-        
     }
     
     private void Update()
     {
         if (!isDragging && !isReturning)
         {
-            // Движение вправо
-            transform.Translate(Vector3.right * speed * Time.deltaTime);
+            Vector3 currentPosition = (_currentTargetPosition)
+                - transform.position;
+            currentPosition.Normalize();
             
+            transform.Translate(currentPosition * speed * Time.deltaTime);
+            
+            float distance = Vector3.Distance(transform.position, _currentTargetPosition);
+            
+            Debug.Log($"Distance: {distance}");
             // Проверка достижения правого края (Death Zone)
-            if (transform.position.x > 10f) // Замените на координату вашей Death Zone
+            if (distance < 1f) // Замените на координату вашей Death Zone
             {
-                // GameManager.Instance.LoseLife();
-                //Destroy(gameObject);
+              //  _isEndSide = !_isEndSide;
+                GameManager.Instance.LoseLife();
+                Destroy(gameObject);
             }
         }
     }
@@ -89,9 +93,8 @@ public class DraggableObject : MonoBehaviour
         }
     }
 
-    public void SetData(Vector3 forwardDirection, Vector3 endDirection)
+    public void SetData(Vector3 currentTargetPosition)
     {
-        _forwardDirection = forwardDirection;
-        _endDirection = endDirection;
+        _currentTargetPosition = currentTargetPosition;
     }
 }
