@@ -1,6 +1,7 @@
 // Файл: ObjectSpawner.cs
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 public class ObjectSpawner : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class ObjectSpawner : MonoBehaviour
     private float currentSpawnInterval; // Для хранения рандомного интервала
     private bool isSpawningActive = true; // Флаг для управления спауном, если игра не окончена
 
+    [Inject] private GameManager _gameManager;
+    
     private void Start()
     {
         if (gameSettings == null)
@@ -39,20 +42,20 @@ public class ObjectSpawner : MonoBehaviour
         currentSpawnInterval = gameSettings.GetRandomFigureSpawnTimeout();
 
         // Подписываемся на события GameManager, чтобы останавливать спаун при конце игры
-        if (GameManager.Instance != null)
+        if (_gameManager != null)
         {
-            GameManager.Instance.OnGameOver += OnGameOver;
-            GameManager.Instance.OnGameWin += OnGameWin;
+            _gameManager.OnGameOver += OnGameOver;
+            _gameManager.OnGameWin += OnGameWin;
         }
     }
 
     private void OnDestroy()
     {
         // Отписываемся от событий, чтобы избежать ошибок при уничтожении объекта
-        if (GameManager.Instance != null)
+        if (_gameManager != null)
         {
-            GameManager.Instance.OnGameOver -= OnGameOver;
-            GameManager.Instance.OnGameWin -= OnGameWin;
+            _gameManager.OnGameOver -= OnGameOver;
+            _gameManager.OnGameWin -= OnGameWin;
         }
     }
 
@@ -86,10 +89,9 @@ public class ObjectSpawner : MonoBehaviour
 
         // 3. Создаем объект из префаба
         DraggableObject newObject = Instantiate(draggableObjectPrefab, startPoints[laneIndex].position, Quaternion.identity);
-
         // 4. Инициализируем его данными, используя скорость из GameSettings
         float randomSpeed = gameSettings.GetRandomFigureSpeed(); // <- Берем скорость из GameSettings!
-        newObject.Initialize(randomShapeData, startPoints[laneIndex].position, endPoints[laneIndex].position, randomSpeed);
+        newObject.Initialize(randomShapeData, startPoints[laneIndex].position, endPoints[laneIndex].position, randomSpeed, _gameManager);
     }
 
     // Методы для обработки окончания игры и остановки спауна

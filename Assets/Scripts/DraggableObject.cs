@@ -1,6 +1,7 @@
 // Файл: DraggableObject.cs
 
 using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(SpriteRenderer))]
@@ -21,6 +22,8 @@ public class DraggableObject : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private Camera mainCamera;
+
+     private GameManager _gameManager;
 
     private void Awake()
     {
@@ -64,14 +67,14 @@ public class DraggableObject : MonoBehaviour
             if (slot.acceptedShape == this.shapeData.shapeType)
             {
                 // Правильный слот
-                GameManager.Instance.AddScore();
+                _gameManager.AddScore();
                 Debug.Log("Правильно! +1 очко.");
                 Destroy(gameObject);
             }
             else
             {
                 // Неправильный слот
-                GameManager.Instance.LoseLife();
+                _gameManager.LoseLife();
                 Debug.Log("Неправильно! -1 жизнь.");
                 
                 // Вызываем событие окончания перетаскивания
@@ -95,7 +98,7 @@ public class DraggableObject : MonoBehaviour
     }
     
     // Метод инициализации, вызываемый спаунером
-    public void Initialize(ShapeData data, Vector3 startPos, Vector3 endPos, float moveSpeed)
+    public void Initialize(ShapeData data, Vector3 startPos, Vector3 endPos, float moveSpeed, GameManager gameManager)
     {
         shapeData = data;
         spriteRenderer.sprite = shapeData.sprite;
@@ -103,6 +106,7 @@ public class DraggableObject : MonoBehaviour
         targetPosition = endPos;
         speed = moveSpeed;
         gameObject.name = shapeData.name; // Устанавливаем имя для удобства отладки
+        _gameManager = gameManager;
     }
 
     private void Update()
@@ -129,7 +133,7 @@ public class DraggableObject : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
-                GameManager.Instance.LoseLife(); // Фигура дошла до конца
+                _gameManager.LoseLife(); // Фигура дошла до конца
                 Destroy(gameObject);
             }
         }

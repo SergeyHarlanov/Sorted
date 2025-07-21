@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minFiguresToWin: 10
   maxFiguresToWin: 20
-  minFigureSpawnTimeout: 1
-  maxFigureSpawnTimeout: 3
+  minFigureSpawnTimeout: 0.3
+  maxFigureSpawnTimeout: 1
   minFigureSpeed: 2
   maxFigureSpeed: 5
-  playerStartingHealth: 3
+  playerStartingHealth: 50
