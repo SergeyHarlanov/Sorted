@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class InputManager : MonoBehaviour
@@ -11,7 +12,7 @@ public class InputManager : MonoBehaviour
     // События
     public event DragEvent OnDragStart;
     public event DragEvent OnDragEnd;
-    public event DragEvent OnDragCollectEnd;
+    public event Action<GameObject,Slot> OnDragCollectEnd;
     public event DragEvent OnDrag;
     
     private GameObject currentDraggedObject;
@@ -66,9 +67,10 @@ public class InputManager : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(
             mainCamera.ScreenToWorldPoint(Input.mousePosition), 
             Vector2.zero);
-
+//        Debug.Log("Name::"+hit.collider.name);
         if (hit.collider != null && hit.collider.gameObject.GetComponent<DraggableObject>() != null)
         {
+          
             currentDraggedObject = hit.collider.gameObject;
             isDragging = true;
             
@@ -91,19 +93,34 @@ public class InputManager : MonoBehaviour
 
     private void EndDrag()
     {
-        if (currentDraggedObject == null) return;
+        if (currentDraggedObject == null ) return;
         
         RaycastHit2D hit = Physics2D.Raycast(
             mainCamera.ScreenToWorldPoint(Input.mousePosition), 
             Vector2.zero);
 
-        if (hit.collider != null && hit.collider.gameObject.GetComponent<CorrectSlot>() != null)
+        if (hit.collider)
         {
-            OnDragCollectEnd?.Invoke(currentDraggedObject);
-        
-            currentDraggedObject = null;
-            isDragging = false;
+            Slot slot = hit.collider.gameObject.GetComponent<Slot>();
             
+            if (hit.collider != null && slot && 
+                slot.acceptedShape == currentDraggedObject.GetComponent<DraggableObject>().ShapeData.shapeType)
+            {
+                Debug.Log("DraggableObject HandleDragCollectEnd0");
+                OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
+        
+                currentDraggedObject = null;
+                isDragging = false;
+            
+            }
+            else
+            {
+                // Вызываем событие окончания перетаскивания
+                OnDragEnd?.Invoke(currentDraggedObject);
+        
+                currentDraggedObject = null;
+                isDragging = false;
+            }
         }
         else
         {
@@ -113,6 +130,8 @@ public class InputManager : MonoBehaviour
             currentDraggedObject = null;
             isDragging = false;
         }
+       
+  
     }
 
     // Метод для проверки, происходит ли сейчас перетаскивание

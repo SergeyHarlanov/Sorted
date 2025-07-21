@@ -1,41 +1,88 @@
+// Файл: DraggableObject.cs
+
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(SpriteRenderer))]
 public class DraggableObject : MonoBehaviour
 {
-    private Vector3 originalPosition;
+    public ShapeData ShapeData => shapeData;
+    // --- Данные и состояние ---
+    private ShapeData shapeData;
     private bool isDragging = false;
-    private float speed;
     private bool isReturning = false;
-    private bool isCorrectSlot = false;
-    
-    public float minSpeed = 1f;
-    public float maxSpeed = 5f;
 
-    private Vector3 _currentTargetPosition;
-    
-    // Ссылка на камеру для преобразования координат
+    // --- Движение ---
+    private Vector3 targetPosition;
+    private Vector3 returnStartPosition;
+    private float speed;
+
+    // --- Компоненты ---
+    private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer;
     private Camera mainCamera;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        mainCamera = Camera.main;
+
+        // Настраиваем Rigidbody для перетаскивания и движения
+        rb.isKinematic = true;
+    }
 
     private void Start()
     {
-        mainCamera = Camera.main;
-        originalPosition = transform.position;
-        speed = Random.Range(minSpeed, maxSpeed);
-        
         // Подписываемся на события InputManager
         InputManager.Instance.OnDragStart += HandleDragStart;
         InputManager.Instance.OnDragEnd += HandleDragEnd;
         InputManager.Instance.OnDragCollectEnd += HandleDragCollectEnd;
+       
+        
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
+
+        if (spriteRenderer != null && boxCollider != null)
+        {
+            // Устанавливаем размер коллайдера равным размеру спрайта
+            boxCollider.size = spriteRenderer.sprite.bounds.size;
+            // Сбрасываем смещение, чтобы оно было по центру спрайта
+            boxCollider.offset = Vector2.zero; 
+        }
     }
 
-    private void HandleDragCollectEnd(GameObject draggedobject)
+    private void HandleDragCollectEnd(GameObject droppedObject, Slot slot)
     {
-        Destroy(gameObject);
+        if (droppedObject != gameObject) return;
+        Debug.Log("DraggableObject HandleDragCollectEnd1"+isDragging);
+        // Столкновение происходит только когда мы отпускаем объект
+      //  if (isDragging) return;
+
+        if (slot != null)
+        {
+            if (slot.acceptedShape == this.shapeData.shapeType)
+            {
+                // Правильный слот
+                GameManager.Instance.AddScore();
+                Debug.Log("Правильно! +1 очко.");
+                Destroy(gameObject);
+            }
+            else
+            {
+                // Неправильный слот
+                GameManager.Instance.LoseLife();
+                Debug.Log("Неправильно! -1 жизнь.");
+                // Тут можно добавить эффект взрыва
+                Destroy(gameObject);
+            }
+        }
     }
+    
 
     private void OnDestroy()
     {
-        // Хорошая практика - отписываться от событий при уничтожении объекта
+        // Всегда отписывайтесь от событий, чтобы избежать утечек памяти
         if (InputManager.Instance != null)
         {
             InputManager.Instance.OnDragStart -= HandleDragStart;
@@ -44,76 +91,55 @@ public class DraggableObject : MonoBehaviour
         }
     }
     
+    // Метод инициализации, вызываемый спаунером
+    public void Initialize(ShapeData data, Vector3 startPos, Vector3 endPos, float moveSpeed)
+    {
+        shapeData = data;
+        spriteRenderer.sprite = shapeData.sprite;
+        transform.position = startPos;
+        targetPosition = endPos;
+        speed = moveSpeed;
+        gameObject.name = shapeData.name; // Устанавливаем имя для удобства отладки
+    }
+
     private void Update()
     {
         if (isDragging)
         {
-            // Если объект перетаскивается, он следует за курсором мыши
+            // Перемещение объекта вслед за курсором
             Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             mousePosition.z = 0;
-            transform.position = mousePosition;
+            rb.MovePosition(mousePosition);
         }
-        else if (!isReturning)
+        else if (isReturning)
         {
-            // Логика автоматического движения слева направо
-            Vector3 direction = (_currentTargetPosition - transform.position).normalized;
-            transform.Translate(direction * speed * Time.deltaTime);
-            
-            float distance = Vector3.Distance(transform.position, _currentTargetPosition);
-            
-            // Проверка достижения правого края (Death Zone)
-            if (distance < 0.1f)
+            // Возвращение на исходную позицию
+            transform.position = Vector3.Lerp(transform.position, returnStartPosition, Time.deltaTime * 8f);
+            if (Vector3.Distance(transform.position, returnStartPosition) < 0.1f)
             {
-                GameManager.Instance.LoseLife();
+                isReturning = false;
+            }
+        }
+        else
+        {
+            // Обычное движение слева направо
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
+            {
+                GameManager.Instance.LoseLife(); // Фигура дошла до конца
                 Destroy(gameObject);
             }
         }
     }
-    
-    private System.Collections.IEnumerator ReturnToOriginalPosition()
-    {
-        while (Vector3.Distance(transform.position, originalPosition) > 0.1f)
-        {
-            transform.position = Vector3.Lerp(transform.position, originalPosition, Time.deltaTime * 5f);
-            yield return null;
-        }
-        
-        transform.position = originalPosition;
-        isReturning = false;
-        // После возврата объект должен снова начать двигаться
-        isDragging = false; 
-    }
-    
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        // Эта логика теперь должна работать правильно
-        if (!isDragging) return; // Срабатывать только во время перетаскивания
 
-        Debug.Log("OnTriggerEnter2D с " + other.name);
-        if (other.CompareTag("CorrectSlot"))
-        {
-            isCorrectSlot = true;
-            GameManager.Instance.AddScore();
-            Destroy(gameObject);
-        }
-        else if (other.CompareTag("WrongSlot"))
-        {
-            GameManager.Instance.LoseLife();
-            Destroy(gameObject);
-            // Здесь можно добавить эффект взрыва
-        }
-    }
-    
     private void HandleDragStart(GameObject draggedObject)
     {
         if (draggedObject == gameObject)
         {
-            Debug.Log(gameObject.name + " был взят.");
+            GetComponent<BoxCollider2D>().enabled = false;
             isDragging = true;
             isReturning = false;
-            // Сохраняем позицию, с которой начали тащить
-            originalPosition = transform.position;
-            GetComponent<BoxCollider2D>().enabled = false;
+            returnStartPosition = transform.position; // Запоминаем место, откуда начали тащить
         }
     }
 
@@ -121,20 +147,30 @@ public class DraggableObject : MonoBehaviour
     {
         if (droppedObject == gameObject)
         {
-            Debug.Log(gameObject.name + " был отпущен.");
+            GetComponent<BoxCollider2D>().enabled = true; 
             isDragging = false;
-            
-            if (!isCorrectSlot)
-            {
-                isReturning = true;
-                StartCoroutine(ReturnToOriginalPosition());
-            }
-            GetComponent<BoxCollider2D>().enabled = true;
+        }
+    }
+    
+    
+    // Если после перетаскивания фигура не попала в слот, она должна вернуться на место
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        // Проверяем, что мы отпустили фигуру и она вышла из зоны слота
+        if (!isDragging && other.GetComponent<Slot>() != null)
+        {
+             StartCoroutine(CheckReturnAfterFrame());
         }
     }
 
-    public void SetData(Vector3 currentTargetPosition)
+    // Небольшая задержка, чтобы убедиться, что мы не вошли в другой слот сразу же
+    private System.Collections.IEnumerator CheckReturnAfterFrame()
     {
-        _currentTargetPosition = currentTargetPosition;
+        yield return new WaitForEndOfFrame();
+        // Если мы все еще не перетаскиваемся и не уничтожены - возвращаемся
+        if (!isDragging && this != null)
+        {
+            isReturning = true;
+        }
     }
 }
