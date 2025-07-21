@@ -2565,7 +2565,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1095387669}
   m_Layer: 0
-  m_Name: managers
+  m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2585,10 +2585,10 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1626981614}
-  - {fileID: 395316752}
   - {fileID: 1723806014}
   - {fileID: 387988101}
   - {fileID: 269696951}
+  - {fileID: 395316752}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1186383756
@@ -3903,7 +3903,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2041181724}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 5.01166, y: -0.58666, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4172,6 +4172,6 @@ SceneRoots:
   - {fileID: 1908669963}
   - {fileID: 470249707}
   - {fileID: 1186383758}
+  - {fileID: 2041181725}
   - {fileID: 1531669102}
   - {fileID: 655737034}
-  - {fileID: 2041181725}

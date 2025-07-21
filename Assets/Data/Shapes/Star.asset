@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1fd103625154866b901580c93dd070d, type: 3}
-  m_Name: New ShapeData 3
+  m_Name: Star
   m_EditorClassIdentifier: 
   shapeType: 3
   sprite: {fileID: 6914771903059274710, guid: aa30b5a186a6fb84381195d85a532888, type: 3}

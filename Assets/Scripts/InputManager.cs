@@ -18,8 +18,7 @@ public class InputManager : MonoBehaviour
     private Camera mainCamera;
     private bool isDragging = false;
 
-    [Inject]
-    private void Construct()
+    private void Start()
     {
         mainCamera = Camera.main;
     }
@@ -55,7 +54,6 @@ public class InputManager : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(
             mainCamera.ScreenToWorldPoint(Input.mousePosition), 
             Vector2.zero);
-//        Debug.Log("Name::"+hit.collider.name);
         if (hit.collider != null && hit.collider.gameObject.GetComponent<DraggableObject>() != null)
         {
           

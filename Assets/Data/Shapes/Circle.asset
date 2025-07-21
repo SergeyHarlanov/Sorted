@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1fd103625154866b901580c93dd070d, type: 3}
-  m_Name: New ShapeData 1
+  m_Name: Circle
   m_EditorClassIdentifier: 
   shapeType: 1
   sprite: {fileID: -6876967963600135126, guid: 55fcbb6dde9f0144599dbbc2f27d58df, type: 3}
