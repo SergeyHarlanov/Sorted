@@ -16,10 +16,9 @@ public class GameInstaller : MonoInstaller
         }
 
         Container.Bind<GameSettings>().FromInstance(_gameSettings).AsSingle().NonLazy();
-        Container.Bind<GameManager>().FromComponentInHierarchy().AsSingle();
         
-        // 🔥 Привязываем UIManager, предполагая, что он является компонентом в иерархии вашей сцены 🔥
+        Container.Bind<GameManager>().FromComponentInHierarchy().AsSingle();
+        Container.Bind<InputManager>().FromComponentInHierarchy().AsSingle();
         Container.Bind<UIManager>().FromComponentInHierarchy().AsSingle();
-        // Если UIManager создается динамически или как префаб, используйте FromNewComponent или FromComponentInNewPrefab
     }
 }

@@ -1,5 +1,6 @@
 // Файл: DraggableObject.cs
 
+using System;
 using UnityEngine;
 using Zenject;
 
@@ -20,40 +21,32 @@ public class DraggableObject : MonoBehaviour
 
     // --- Компоненты ---
     private Rigidbody2D rb;
-    private SpriteRenderer spriteRenderer;
+    private SpriteRenderer _spriteRenderer;
     private Camera mainCamera;
 
      private GameManager _gameManager;
+     private InputManager _inputManager;
 
-    private void Awake()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        mainCamera = Camera.main;
 
-        // Настраиваем Rigidbody для перетаскивания и движения
-        rb.isKinematic = true;
-    }
+     private void Awake()
+     {
+         rb = GetComponent<Rigidbody2D>();
+         mainCamera = Camera.main;
+         
+         rb.isKinematic = true;
+         
+         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+         BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
 
-    private void Start()
-    {
-        // Подписываемся на события InputManager
-        InputManager.Instance.OnDragStart += HandleDragStart;
-        InputManager.Instance.OnDragEnd += HandleDragEnd;
-        InputManager.Instance.OnDragCollectEnd += HandleDragCollectEnd;
-       
-        
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
-
-        if (spriteRenderer != null && boxCollider != null)
-        {
-            // Устанавливаем размер коллайдера равным размеру спрайта
-            boxCollider.size = spriteRenderer.sprite.bounds.size;
-            // Сбрасываем смещение, чтобы оно было по центру спрайта
-            boxCollider.offset = Vector2.zero; 
-        }
-    }
+         if (spriteRenderer != null && boxCollider != null)
+         {
+             _spriteRenderer = spriteRenderer;
+             // Устанавливаем размер коллайдера равным размеру спрайта
+             boxCollider.size = spriteRenderer.sprite.bounds.size;
+             // Сбрасываем смещение, чтобы оно было по центру спрайта
+             boxCollider.offset = Vector2.zero; 
+         }
+     }
 
     private void HandleDragCollectEnd(GameObject droppedObject, Slot slot)
     {
@@ -89,19 +82,26 @@ public class DraggableObject : MonoBehaviour
     private void OnDestroy()
     {
         // Всегда отписывайтесь от событий, чтобы избежать утечек памяти
-        if (InputManager.Instance != null)
+        if (_inputManager != null)
         {
-            InputManager.Instance.OnDragStart -= HandleDragStart;
-            InputManager.Instance.OnDragEnd -= HandleDragEnd;
-            InputManager.Instance.OnDragCollectEnd -= HandleDragCollectEnd;
+            _inputManager.OnDragStart -= HandleDragStart;
+            _inputManager.OnDragEnd -= HandleDragEnd;
+            _inputManager.OnDragCollectEnd -= HandleDragCollectEnd;
         }
     }
     
     // Метод инициализации, вызываемый спаунером
-    public void Initialize(ShapeData data, Vector3 startPos, Vector3 endPos, float moveSpeed, GameManager gameManager)
+    public void Initialize(ShapeData data, Vector3 startPos, Vector3 endPos, float moveSpeed, GameManager gameManager, InputManager inputManager)
     {
+        _inputManager = inputManager;
+
+        // Подписываемся на события InputManager
+        _inputManager.OnDragStart += HandleDragStart;
+        _inputManager.OnDragEnd += HandleDragEnd;
+        _inputManager.OnDragCollectEnd += HandleDragCollectEnd;
+        
         shapeData = data;
-        spriteRenderer.sprite = shapeData.sprite;
+        _spriteRenderer.sprite = shapeData.sprite;
         transform.position = startPos;
         targetPosition = endPos;
         speed = moveSpeed;

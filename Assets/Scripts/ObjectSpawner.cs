@@ -5,10 +5,6 @@ using Zenject;
 
 public class ObjectSpawner : MonoBehaviour
 {
-    [Header("Настройки игры")]
-    [Tooltip("Ссылка на ScriptableObject с общими настройками игры")]
-    [SerializeField] private GameSettings gameSettings; // <- Добавляем эту ссылку!
-
     [Header("Ссылки на объекты")]
     [Tooltip("Префаб объекта, который будет спауниться")]
     [SerializeField] private DraggableObject draggableObjectPrefab;
@@ -28,18 +24,14 @@ public class ObjectSpawner : MonoBehaviour
     private bool isSpawningActive = true; // Флаг для управления спауном, если игра не окончена
 
     [Inject] private GameManager _gameManager;
+    [Inject] private GameSettings _gameSettings;
+    [Inject] private InputManager _inputManager;
     
-    private void Start()
+    [Inject]
+    private void Construct()
     {
-        if (gameSettings == null)
-        {
-            Debug.LogError("GameSettings не назначен в ObjectSpawner! Пожалуйста, назначьте ScriptableObject GameSettings в инспекторе.");
-            enabled = false; // Отключаем скрипт, если нет настроек
-            return;
-        }
-
         // Получаем первый случайный интервал спауна из GameSettings
-        currentSpawnInterval = gameSettings.GetRandomFigureSpawnTimeout();
+        currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
 
         // Подписываемся на события GameManager, чтобы останавливать спаун при конце игры
         if (_gameManager != null)
@@ -48,6 +40,7 @@ public class ObjectSpawner : MonoBehaviour
             _gameManager.OnGameWin += OnGameWin;
         }
     }
+
 
     private void OnDestroy()
     {
@@ -69,7 +62,7 @@ public class ObjectSpawner : MonoBehaviour
             SpawnObject();
             timer = 0;
             // Генерируем новый случайный интервал для следующего спауна
-            currentSpawnInterval = gameSettings.GetRandomFigureSpawnTimeout();
+            currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
         }
     }
 
@@ -90,8 +83,8 @@ public class ObjectSpawner : MonoBehaviour
         // 3. Создаем объект из префаба
         DraggableObject newObject = Instantiate(draggableObjectPrefab, startPoints[laneIndex].position, Quaternion.identity);
         // 4. Инициализируем его данными, используя скорость из GameSettings
-        float randomSpeed = gameSettings.GetRandomFigureSpeed(); // <- Берем скорость из GameSettings!
-        newObject.Initialize(randomShapeData, startPoints[laneIndex].position, endPoints[laneIndex].position, randomSpeed, _gameManager);
+        float randomSpeed = _gameSettings.GetRandomFigureSpeed(); // <- Берем скорость из GameSettings!
+        newObject.Initialize(randomShapeData, startPoints[laneIndex].position, endPoints[laneIndex].position, randomSpeed, _gameManager, _inputManager);
     }
 
     // Методы для обработки окончания игры и остановки спауна

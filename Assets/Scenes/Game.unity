@@ -154,7 +154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0.000061035156, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &259263132
@@ -417,12 +417,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreText: {fileID: 1470893586}
   livesText: {fileID: 1030412609}
-  winGoalText: {fileID: 0}
   resultPanel: {fileID: 966553850}
   resultText: {fileID: 292705037}
   resultPanelBackground: {fileID: 966553852}
+  restartButton: {fileID: 571626702}
   gameOverColor: {r: 1, g: 0, b: 0, a: 1}
   winColor: {r: 0, g: 1, b: 0, a: 1}
+  scoreNotEnoughColor: {r: 1, g: 0, b: 0, a: 1}
+  scoreEnoughColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &292705035
 GameObject:
   m_ObjectHideFlags: 0
@@ -572,7 +574,7 @@ GameObject:
   - component: {fileID: 340823462}
   - component: {fileID: 340823461}
   m_Layer: 0
-  m_Name: Canvas (1)
+  m_Name: CanvasDeacthZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -872,7 +874,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fa0cd711e2644239120a5f89b7b292f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameSettings: {fileID: 11400000, guid: f84974a6834d6b54996e5e122abfeb90, type: 2}
   draggableObjectPrefab: {fileID: -5442286947216823822, guid: cbdabce22209da84496ec81c35a39377, type: 3}
   shapeDatas:
   - {fileID: 11400000, guid: f10b7cf94d0a20045a7b3811e4042ad0, type: 2}
@@ -1890,6 +1891,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
 --- !u!58 &935647134
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -2223,6 +2225,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
 --- !u!114 &944279328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2397,8 +2400,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 61.5
-  m_fontSizeBase: 61.5
+  m_fontSize: 53.08
+  m_fontSizeBase: 53.08
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2462,7 +2465,7 @@ GameObject:
   - component: {fileID: 1049949200}
   - component: {fileID: 1049949199}
   m_Layer: 0
-  m_Name: Canvas
+  m_Name: CanvasSpawnZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3034,8 +3037,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 61.5
-  m_fontSizeBase: 61.5
+  m_fontSize: 53.08
+  m_fontSizeBase: 53.08
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3337,6 +3340,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
 --- !u!114 &1550370509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3385,7 +3389,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 24, y: 12.799988}
+  m_AnchoredPosition: {x: 24, y: 12.800049}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1589045205
@@ -3739,6 +3743,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
 --- !u!114 &1895545791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3965,6 +3970,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
 --- !u!58 &2109379672
 CircleCollider2D:
   m_ObjectHideFlags: 0

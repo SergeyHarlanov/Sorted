@@ -1,10 +1,9 @@
 using System;
 using UnityEngine;
+using Zenject;
 
 public class InputManager : MonoBehaviour
 {
-    public static InputManager Instance { get; private set; }
-
     // Делегаты для событий ввода
     public delegate void DragEvent(GameObject draggedObject);
     public delegate void DropEvent(GameObject droppedObject);
@@ -19,20 +18,9 @@ public class InputManager : MonoBehaviour
     private Camera mainCamera;
     private bool isDragging = false;
 
-    private void Awake()
+    [Inject]
+    private void Construct()
     {
-        // Реализация Singleton
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
-        
         mainCamera = Camera.main;
     }
 
