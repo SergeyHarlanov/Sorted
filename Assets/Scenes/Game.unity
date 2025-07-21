@@ -423,8 +423,6 @@ MonoBehaviour:
   restartButton: {fileID: 571626702}
   gameOverColor: {r: 1, g: 0, b: 0, a: 1}
   winColor: {r: 0, g: 1, b: 0, a: 1}
-  scoreNotEnoughColor: {r: 1, g: 0, b: 0, a: 1}
-  scoreEnoughColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &292705035
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,10 +1,9 @@
 using UnityEngine;
 using Zenject;
-using DG.Tweening; // Import the DOTween namespace
+using DG.Tweening;
 
 public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnParams, IMemoryPool>
 {
-    public ShapeData ShapeData => shapeData;
     private ShapeData shapeData;
     private bool isDragging = false;
     private bool isReturning = false;
@@ -12,28 +11,30 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
     private Vector3 returnStartPosition;
     private float speed;
 
-    private Rigidbody2D rb;
+    private Rigidbody2D _rb;
     private SpriteRenderer _spriteRenderer;
     private BoxCollider2D _boxCollider2D;
-    private Camera mainCamera;
     private GameManager _gameManager;
     private InputManager _inputManager;
-    private IMemoryPool _pool; // Ссылка на пул для возврата
+    private EventBus _eventBus;
+    private IMemoryPool _pool;
 
     private Vector3 _startSize;
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        mainCamera = Camera.main;
+        _rb = GetComponent<Rigidbody2D>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        rb.isKinematic = true;
+        _rb.isKinematic = true;
         _startSize = transform.localScale;
     }
 
-    /// <summary>
-    /// Вызывается, когда объект "просыпается" (берётся из пула).
-    /// </summary>
+    [Inject]
+    public void Construct(EventBus eventBus)
+    {
+        _eventBus = eventBus;
+    }
+
     public void OnSpawned(DraggableObjectSpawnParams p, IMemoryPool pool)
     {
         _pool = pool;
@@ -42,111 +43,83 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         transform.position = p.StartPos;
         targetPosition = p.EndPos;
         speed = p.MoveSpeed;
-        gameObject.name = shapeData.name;
         _gameManager = p.GameManager;
         _inputManager = p.InputManager;
-        transform.localScale = _startSize;
-        
-        // Сброс состояния
+
+        _eventBus.OnDragStart += HandleDragStart;
+        _eventBus.OnDragEnd += HandleDragEnd;
+        _eventBus.OnDragCollectEnd += HandleDragCollectEnd; // Исправлено: прямая подписка
+        _boxCollider2D = GetComponent<BoxCollider2D>();
+        _boxCollider2D.enabled = true; // Убедиться, что коллайдер включен при спавне
+
+        _boxCollider2D.size = _spriteRenderer.sprite.bounds.size;
+        _boxCollider2D.offset = Vector2.zero;
+
         isDragging = false;
         isReturning = false;
-        gameObject.SetActive(true);
-
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
-
-        // Подписка на события
-        if (_inputManager != null)
-        {
-            _inputManager.OnDragStart += HandleDragStart;
-            _inputManager.OnDragEnd += HandleDragEnd;
-            _inputManager.OnDragCollectEnd += HandleDragCollectEnd;
-        }
-
-        _boxCollider2D = boxCollider;
-        boxCollider.enabled = true;
-
-        if (spriteRenderer != null && boxCollider != null)
-        {
-
-            // Устанавливаем размер коллайдера равным размеру спрайта
-            boxCollider.size = spriteRenderer.sprite.bounds.size;
-            // Сбрасываем смещение, чтобы оно было по центру спрайта
-            boxCollider.offset = Vector2.zero;
-        }
+        transform.localScale = _startSize;
     }
 
-    /// <summary>
-    /// Вызывается, когда объект "засыпает" (возвращается в пул).
-    /// </summary>
     public void OnDespawned()
     {
-        // Отписка от событий во избежание утечек
-        if (_inputManager != null)
+        if (_eventBus != null)
         {
-            _inputManager.OnDragStart -= HandleDragStart;
-            _inputManager.OnDragEnd -= HandleDragEnd;
-            _inputManager.OnDragCollectEnd -= HandleDragCollectEnd;
+            _eventBus.OnDragStart -= HandleDragStart;
+            _eventBus.OnDragEnd -= HandleDragEnd;
+            _eventBus.OnDragCollectEnd -= HandleDragCollectEnd; // Исправлено
         }
-        _pool = null;
-        gameObject.SetActive(false);
-        transform.DOKill(); // Ensure any DOTween animations are stopped when despawned
     }
 
-    // В логике игры заменяем Destroy() на возврат в пул
     private void Update()
     {
-        if (isDragging)
+        if (!isDragging && !isReturning)
         {
-            Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            mousePosition.z = 0;
-            rb.MovePosition(mousePosition);
+            MoveTowardsTarget();
         }
-        else if (isReturning)
+
+        if (isReturning)
         {
-            transform.position = Vector3.Lerp(transform.position, returnStartPosition, Time.deltaTime * 8f);
-            if (Vector3.Distance(transform.position, returnStartPosition) < 0.1f) isReturning = false;
-        }
-        else
-        {
-            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
-            {
-                // DOTween animation when reaching the end
-                transform.DOScale(Vector3.zero, 0.3f)
-                    .OnComplete(() =>
-                    {
-                        _gameManager.LoseLife();
-                        _pool.Despawn(this); // Возврат в пул after animation
-                    });
-            }
-            else
-            {
-                transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
-            }
+            ReturnToStartPosition();
         }
     }
 
-    private void HandleDragCollectEnd(GameObject droppedObject, Slot slot)
+    private void SetRandomRotation()
+    {
+        transform.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
+    }
+
+    private void MoveTowardsTarget()
+    {
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            _gameManager.LoseLife();
+            _pool.Despawn(this);
+        }
+    }
+
+
+    private void HandleDragCollectEnd(GameObject droppedObject, Slot slot) // Теперь параметры приходят напрямую
     {
         if (droppedObject != gameObject) return;
+
         if (slot != null && slot.acceptedShape == this.shapeData.shapeType)
         {
-            // DOTween animation for correct match
             transform.DOScale(Vector3.zero, 0.2f)
                 .OnComplete(() =>
                 {
                     _gameManager.AddScore();
-                    _pool.Despawn(this); // Возврат в пул after animation
+                    _pool.Despawn(this);
                 });
         }
         else
         {
             if (slot != null) _gameManager.LoseLife();
-            HandleDragEnd(droppedObject);
+            HandleDragEnd(droppedObject); // Объект возвращается на место или удаляется
         }
     }
 
-    // Вспомогательные методы остаются без изменений
     private void HandleDragStart(GameObject draggedObject)
     {
         if (draggedObject == gameObject)
@@ -154,11 +127,10 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
             isDragging = true;
             isReturning = false;
             returnStartPosition = transform.position;
-            _boxCollider2D.enabled = false;
+            _boxCollider2D.enabled = false; // Отключаем коллайдер при начале перетаскивания
 
-            // DOTween jiggle animation when dragging starts
             transform.DOPunchScale(new Vector3(-0.2f, -0.2f, 0), 0.25f, 1, 0.5f)
-                .SetEase(Ease.OutBounce); // A nice bouncy effect
+                .SetEase(Ease.OutBounce);
         }
     }
 
@@ -167,7 +139,20 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         if (droppedObject == gameObject)
         {
             isDragging = false;
-            _boxCollider2D.enabled = true;
+            isReturning = true;
+            _boxCollider2D.enabled = true; // Включаем коллайдер после окончания перетаскивания
         }
     }
+
+    private void ReturnToStartPosition()
+    {
+        transform.position = Vector3.MoveTowards(transform.position, returnStartPosition, speed * Time.deltaTime * 2);
+
+        if (Vector3.Distance(transform.position, returnStartPosition) < 0.01f)
+        {
+            isReturning = false;
+        }
+    }
+
+    public class Factory : PlaceholderFactory<DraggableObjectSpawnParams, DraggableObject> { }
 }

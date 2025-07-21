@@ -4,17 +4,16 @@ using Zenject;
 
 public class InputManager : MonoBehaviour
 {
-    public delegate void DragEvent(GameObject draggedObject);
-    public delegate void DropEvent(GameObject droppedObject);
-    
-    public event DragEvent OnDragStart;
-    public event DragEvent OnDragEnd;
-    public event Action<GameObject,Slot> OnDragCollectEnd;
-    public event DragEvent OnDrag;
-    
+    private EventBus _eventBus;
     private GameObject currentDraggedObject;
     private Camera mainCamera;
     private bool isDragging = false;
+
+    [Inject]
+    public void Construct(EventBus eventBus)
+    {
+        _eventBus = eventBus;
+    }
 
     private void Start()
     {
@@ -28,19 +27,16 @@ public class InputManager : MonoBehaviour
 
     private void HandleInput()
     {
-        // Обработка начала перетаскивания
         if (Input.GetMouseButtonDown(0))
         {
             StartDrag();
         }
-        
-        // Обработка процесса перетаскивания
+
         if (isDragging && Input.GetMouseButton(0))
         {
             ContinueDrag();
         }
-        
-        // Обработка окончания перетаскивания
+
         if (isDragging && Input.GetMouseButtonUp(0))
         {
             EndDrag();
@@ -50,63 +46,53 @@ public class InputManager : MonoBehaviour
     private void StartDrag()
     {
         RaycastHit2D hit = Physics2D.Raycast(
-            mainCamera.ScreenToWorldPoint(Input.mousePosition), 
+            mainCamera.ScreenToWorldPoint(Input.mousePosition),
             Vector2.zero);
-        if (hit.collider != null && hit.collider.gameObject.GetComponent<DraggableObject>() != null)
+
+        if (hit.collider != null)
         {
-            currentDraggedObject = hit.collider.gameObject;
-            isDragging = true;
-            
-            // Вызываем событие начала перетаскивания
-            OnDragStart?.Invoke(currentDraggedObject);
+            DraggableObject draggable = hit.collider.GetComponent<DraggableObject>();
+            if (draggable != null)
+            {
+                currentDraggedObject = hit.collider.gameObject;
+                isDragging = true;
+                _eventBus.PublishDragStart(currentDraggedObject);
+            }
         }
     }
 
     private void ContinueDrag()
     {
         if (currentDraggedObject == null) return;
-        
+
         Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0;
         currentDraggedObject.transform.position = mousePosition;
-        
-        // Вызываем событие продолжения перетаскивания
-        OnDrag?.Invoke(currentDraggedObject);
+
+        _eventBus.PublishDrag(currentDraggedObject);
     }
 
     private void EndDrag()
     {
-        if (currentDraggedObject == null ) return;
-        
+        if (currentDraggedObject == null) return;
+
         RaycastHit2D hit = Physics2D.Raycast(
-            mainCamera.ScreenToWorldPoint(Input.mousePosition), 
+            mainCamera.ScreenToWorldPoint(Input.mousePosition),
             Vector2.zero);
 
         if (hit.collider)
         {
             Slot slot = hit.collider.gameObject.GetComponent<Slot>();
-            if (hit.collider != null && slot && 
-                slot.acceptedShape == currentDraggedObject.GetComponent<DraggableObject>().ShapeData.shapeType)
-            {
-                OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
-        
-                currentDraggedObject = null;
-                isDragging = false;
-            
-            }
-            else
-            {
-                OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
-        
-                currentDraggedObject = null;
-                isDragging = false;
-            }
+            // Теперь PublishDragCollectEnd будет всегда вызываться с правильными параметрами
+            _eventBus.PublishDragCollectEnd(currentDraggedObject, slot); // Исправлено: передаем slot
+
+            currentDraggedObject = null;
+            isDragging = false;
         }
         else
         {
-            // Вызываем событие окончания перетаскивания
-            OnDragEnd?.Invoke(currentDraggedObject);
-        
+            _eventBus.PublishDragEnd(currentDraggedObject);
+
             currentDraggedObject = null;
             isDragging = false;
         }

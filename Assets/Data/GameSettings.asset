@@ -18,4 +18,4 @@ MonoBehaviour:
   maxFigureSpawnTimeout: 1
   minFigureSpeed: 2
   maxFigureSpeed: 5
-  playerStartingHealth: 50
+  initialLives: 50

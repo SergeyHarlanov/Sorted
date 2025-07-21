@@ -1,110 +1,71 @@
 using UnityEngine;
 using System;
-using Zenject; // Обязательно должен быть!
+using Zenject;
 
 public class GameManager : MonoBehaviour
 {
-    private GameSettings _gameSettings; 
-    public event Action<int> OnScoreChanged;
-    public event Action<int> OnLivesChanged;
-    public event Action<int> OnGameOver;
-    public event Action<int> OnGameWin;
+    private GameSettings _gameSettings;
+    private EventBus _eventBus;
 
-    // Публичные свойства для текущего счета, жизней и закешированной цели победы
     public int CurrentLives { get; private set; }
     public int CurrentScore { get; private set; }
-    
-    // Закешированное количество фигур, которое нужно отсортировать для победы. 
-    public int FiguresRequiredToWin { get; private set; } 
 
-    /// <summary>
-    /// Основной метод для внедрения зависимостей Zenject.
-    /// Zenject вызывает его, когда все зависимости готовы.
-    /// </summary>
+    public int FiguresRequiredToWin { get; private set; }
+
     [Inject]
-    public void Construct(GameSettings gameSettings)
+    public void Construct(GameSettings gameSettings, EventBus eventBus)
     {
         _gameSettings = gameSettings;
-        Debug.Log("GameSettings успешно инжектированы в GameManager.");
-
-        InitializeGameData(); 
+        _eventBus = eventBus;
+        InitializeGameData();
     }
 
-    /// <summary>
-    /// Отдельный метод для инициализации игровых данных, вызываемый после внедрения зависимостей.
-    /// Это делает код чище и разделяет инъекцию от логики инициализации.
-    /// </summary>
     private void InitializeGameData()
     {
         if (_gameSettings == null)
         {
-            Debug.LogError("Ошибка: GameSettings не был инжектирован в GameManager. Проверьте ваш GameInstaller!");
-            enabled = false; 
+            Debug.LogError("GameSettings не инициализирован в GameManager!");
             return;
         }
 
-        // Инициализируем фиксированную цель для победы ОДИН РАЗ при старте игры
-        FiguresRequiredToWin = _gameSettings.GetRandomFiguresToWin();
-        
-        // Инициализируем текущее здоровье игрока из настроек
-        CurrentLives = _gameSettings.PlayerStartingHealth;
-        // Сбрасываем текущий счет
+        CurrentLives = _gameSettings.InitialLives;
         CurrentScore = 0;
+        FiguresRequiredToWin = _gameSettings.GetRandomFiguresToWin();
 
-        Debug.Log($"Начальное здоровье игрока: {CurrentLives}");
-        Debug.Log($"Для победы нужно отсортировать фигур: {FiguresRequiredToWin}"); 
-
-        // Оповещаем UI и другие подписанные системы об начальных значениях
-        OnLivesChanged?.Invoke(CurrentLives); 
-        OnScoreChanged?.Invoke(CurrentScore); 
+        // Публикуем начальные значения через EventBus для обновления UI
+        _eventBus.PublishLivesChanged(CurrentLives);
+        _eventBus.PublishScoreChanged(CurrentScore);
     }
 
-    /// <summary>
-    /// Увеличивает счет игрока и проверяет условие победы.
-    /// </summary>
     public void AddScore()
     {
         CurrentScore++;
-        Debug.Log("Score: " + CurrentScore);
-        OnScoreChanged?.Invoke(CurrentScore); // Вызываем событие для обновления UI
+        _eventBus.PublishScoreChanged(CurrentScore);
 
-        if (CurrentScore >= FiguresRequiredToWin) 
+        if (CurrentScore >= FiguresRequiredToWin)
         {
             GameWin();
         }
     }
 
-    /// <summary>
-    /// Уменьшает количество жизней игрока и проверяет условие поражения.
-    /// </summary>
     public void LoseLife()
     {
         CurrentLives--;
-        Debug.Log("Lives left: " + CurrentLives);
-        OnLivesChanged?.Invoke(CurrentLives); 
+        _eventBus.PublishLivesChanged(CurrentLives);
 
-        // Проверяем, закончились ли жизни
         if (CurrentLives <= 0)
         {
             GameOver();
         }
     }
 
-    /// <summary>
-    /// Обрабатывает состояние "Игра окончена".
-    /// </summary>
     private void GameOver()
     {
-        Debug.Log("Game Over! Final Score: " + CurrentScore);
-        OnGameOver?.Invoke(CurrentScore); 
+        _eventBus.PublishGameOver(CurrentScore);
     }
 
-    /// <summary>
-    /// Обрабатывает состояние "Игрок победил".
-    /// </summary>
     private void GameWin()
     {
-        Debug.Log("You Win! Final Score: " + CurrentScore);
-        OnGameWin?.Invoke(CurrentScore); 
+        _eventBus.PublishGameWin(CurrentScore);
     }
 }

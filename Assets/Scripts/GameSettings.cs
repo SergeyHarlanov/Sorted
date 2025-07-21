@@ -1,4 +1,3 @@
-// GameSettings.cs (ScriptableObject)
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "GameSettings", menuName = "Game/Game Settings", order = 1)]
@@ -30,7 +29,7 @@ public class GameSettings : ScriptableObject
 
     [Header("Здоровье игрока")]
     [Tooltip("Начальное количество здоровья игрока.")]
-    [SerializeField] private int playerStartingHealth = 3; // Переименовано для ясности
+    [SerializeField] private int initialLives = 3;
 
-    public int PlayerStartingHealth => playerStartingHealth;
+    public int InitialLives => initialLives;
 }

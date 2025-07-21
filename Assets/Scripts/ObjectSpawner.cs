@@ -14,32 +14,31 @@ public class ObjectSpawner : MonoBehaviour
     private float currentSpawnInterval;
     private bool isSpawningActive = true;
 
+    private EventBus _eventBus;
     private GameManager _gameManager;
     private GameSettings _gameSettings;
     private InputManager _inputManager;
     private DraggableObjectPool _pool; 
 
     [Inject]
-    private void Construct(GameManager gameManager, GameSettings gameSettings, InputManager inputManager, DraggableObjectPool pool)
+    private void Construct(GameManager gameManager, GameSettings gameSettings, InputManager inputManager, DraggableObjectPool pool, EventBus eventBus)
     {
         _gameManager = gameManager;
         _gameSettings = gameSettings;
         _inputManager = inputManager;
         _pool = pool;
+        _eventBus = eventBus;
 
         currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
-        if (_gameManager != null)
-        {
-            _gameManager.OnGameOver += OnGameOver;
-            _gameManager.OnGameWin += OnGameWin;
-        }
+        
+        _eventBus.OnGameOver += OnGameOver;
+        _eventBus.OnGameWin += OnGameWin;
     }
 
     private void SpawnObject()
     {
         if (shapeDatas.Count == 0 || startPoints.Length == 0) return;
 
-        // 1. Prepare the spawn data
         int laneIndex = Random.Range(0, startPoints.Length);
         var spawnParams = new DraggableObjectSpawnParams
         {
@@ -66,14 +65,22 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
+    private void OnGameOver(int finalScore)
+    {
+        isSpawningActive = false;
+    }
+
+    private void OnGameWin(int finalScore)
+    {
+        isSpawningActive = false;
+    }
+
     private void OnDestroy()
     {
-        if (_gameManager != null)
+        if (_eventBus != null)
         {
-            _gameManager.OnGameOver -= OnGameOver;
-            _gameManager.OnGameWin -= OnGameWin;
+            _eventBus.OnGameOver -= OnGameOver;
+            _eventBus.OnGameWin -= OnGameWin;
         }
     }
-    private void OnGameOver(int finalScore) => isSpawningActive = false;
-    private void OnGameWin(int finalScore) => isSpawningActive = false;
 }
