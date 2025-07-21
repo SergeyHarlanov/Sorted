@@ -1,132 +1,85 @@
 // Файл: UIManager.cs
 using UnityEngine;
-using TMPro; // Для работы с TextMeshPro
-using UnityEngine.UI; // Для работы с UI элементами
-using UnityEngine.SceneManagement; // Для перезагрузки сцены
-using System.Collections; // Для корутин
+using TMPro; // Если используете TextMeshPro для UI
+using Zenject; // Добавляем using Zenject
 
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance { get; private set; }
-
     [Header("UI Элементы")]
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI livesText;
-    [SerializeField] private Button _restartButton;
-    [Header("Панель результатов")]
-    [SerializeField] private GameObject resultPanel;
-    [SerializeField] private TextMeshProUGUI combinedResultText; // Единый текстовый элемент для заголовка и счета
-    [SerializeField] private Image resultPanelBackground; // Фон панели для изменения цвета
-    [SerializeField] private Color winColor = Color.green; // Цвет для победы
-    [SerializeField] private Color loseColor = Color.red; // Цвет для поражения
+    [SerializeField] private TextMeshProUGUI winGoalText; // Новый TextMeshPro для отображения цели победы
 
-    private void Awake()
+    private GameManager _gameManager; // Инжектируем GameManager
+
+    // Zenject инжектирует GameManager
+    [Inject]
+    public void Construct(GameManager gameManager)
     {
-        if (Instance == null)
+        _gameManager = gameManager;
+        Debug.Log("GameManager успешно инжектирован в UIManager.");
+        
+        if (_gameManager == null)
         {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
+            Debug.LogError("GameManager не был инжектирован в UIManager. Проверьте GameInstaller.");
+            enabled = false;
+            return;
         }
 
-        // Изначально скрываем панель результатов
-        resultPanel.SetActive(false);
-    }
+        // Подписываемся на события GameManager для обновления UI
+        _gameManager.OnScoreChanged += UpdateScoreUI;
+        _gameManager.OnLivesChanged += UpdateLivesUI;
+        _gameManager.OnGameOver += OnGameOverUI; // Опционально: обработка Game Over в UI
+        _gameManager.OnGameWin += OnGameWinUI;   // Опционально: обработка Win в UI
 
-    private void Start()
-    {
-        // Убеждаемся, что GameManager существует и подписываемся на его события
-        if (GameManager.Instance != null)
+        // 🔥 Получаем закешированное количество фигур для победы из GameManager 🔥
+        if (winGoalText != null)
         {
-            GameManager.Instance.OnScoreChanged += UpdateScoreDisplay;
-            GameManager.Instance.OnLivesChanged += UpdateLivesDisplay;
-            GameManager.Instance.OnGameOver += ShowResultScreen;
-            GameManager.Instance.OnGameWin += ShowResultScreen;
-            _restartButton.onClick.AddListener(RestartGame);
-
-            // Обновляем UI при старте
-            UpdateScoreDisplay(GameManager.Instance.score);
-            UpdateLivesDisplay(GameManager.Instance.lives);
+            winGoalText.text = $"Цель: {_gameManager.FiguresRequiredToWin}";
         }
+
+        // Инициализируем UI текущими значениями (они уже установлены в GameManager.PostConstruct)
+        UpdateScoreUI(_gameManager.CurrentScore);
+        UpdateLivesUI(_gameManager.CurrentLives);
     }
 
     private void OnDestroy()
     {
-        // Отписываемся от событий при уничтожении объекта
-        if (GameManager.Instance != null)
+        // Отписываемся от событий, чтобы избежать утечек памяти и ошибок
+        if (_gameManager != null)
         {
-            GameManager.Instance.OnScoreChanged -= UpdateScoreDisplay;
-            GameManager.Instance.OnLivesChanged -= UpdateLivesDisplay;
-            GameManager.Instance.OnGameOver -= ShowResultScreen;
-            GameManager.Instance.OnGameWin -= ShowResultScreen;
-            
-            _restartButton.onClick.RemoveListener(RestartGame);
+            _gameManager.OnScoreChanged -= UpdateScoreUI;
+            _gameManager.OnLivesChanged -= UpdateLivesUI;
+            _gameManager.OnGameOver -= OnGameOverUI;
+            _gameManager.OnGameWin -= OnGameWinUI;
         }
     }
 
-    public void UpdateScoreDisplay(int newScore)
+    private void UpdateScoreUI(int newScore)
     {
         if (scoreText != null)
         {
-            scoreText.text = "Score: " + newScore;
+            scoreText.text = $"Очки: {newScore}";
         }
     }
 
-    public void UpdateLivesDisplay(int newLives)
+    private void UpdateLivesUI(int newLives)
     {
         if (livesText != null)
         {
-            livesText.text = "Lives: " + newLives;
+            livesText.text = $"Жизни: {newLives}";
         }
     }
 
-    // Универсальный метод для показа экрана результатов
-    public void ShowResultScreen(int finalScore)
+    private void OnGameOverUI(int finalScore)
     {
-        if (resultPanel != null)
-        {
-            resultPanel.SetActive(true);
-
-            // Определяем, это победа или поражение
-            // Используем условие, что победа достигается, если finalScore >= scoreToWin
-            bool isWin = (finalScore >= GameManager.Instance.scoreToWin);
-
-            string title;
-            Color panelColor;
-
-            if (isWin)
-            {
-                title = "Победа!";
-                panelColor = winColor;
-            }
-            else
-            {
-                title = "Поражение";
-                panelColor = loseColor;
-            }
-
-            // Объединяем заголовок и счет в одну строку
-            if (combinedResultText != null)
-            {
-                combinedResultText.text = $"{title}\nОчки: {finalScore}";
-            }
-            
-            // Устанавливаем цвет фона панели
-            if (resultPanelBackground != null)
-            {
-                resultPanelBackground.color = panelColor;
-            }
-        }
-        Time.timeScale = 0f; // Останавливаем игру
+        // Например, показать панель "Game Over"
+        Debug.Log($"UI: Игра окончена с очками: {finalScore}");
     }
 
-    // Метод для кнопки "Рестарт"
-    public void RestartGame()
+    private void OnGameWinUI(int finalScore)
     {
-        Time.timeScale = 1f; // Возобновляем игру
-        // Перезагружаем текущую сцену
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        // Например, показать панель "Вы победили!"
+        Debug.Log($"UI: Вы победили с очками: {finalScore}");
     }
 }
