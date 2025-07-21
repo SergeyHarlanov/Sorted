@@ -1,8 +1,7 @@
 using UnityEngine;
 using Zenject;
+using DG.Tweening; // Import the DOTween namespace
 
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(SpriteRenderer))]
 public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnParams, IMemoryPool>
 {
     public ShapeData ShapeData => shapeData;
@@ -21,12 +20,15 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
     private InputManager _inputManager;
     private IMemoryPool _pool; // Ссылка на пул для возврата
 
+    private Vector3 _startSize;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
         _spriteRenderer = GetComponent<SpriteRenderer>();
         rb.isKinematic = true;
+        _startSize = transform.localScale;
     }
 
     /// <summary>
@@ -43,12 +45,13 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         gameObject.name = shapeData.name;
         _gameManager = p.GameManager;
         _inputManager = p.InputManager;
-
+        transform.localScale = _startSize;
+        
         // Сброс состояния
         isDragging = false;
         isReturning = false;
         gameObject.SetActive(true);
-        
+
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
 
@@ -62,14 +65,14 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
 
         _boxCollider2D = boxCollider;
         boxCollider.enabled = true;
-        
+
         if (spriteRenderer != null && boxCollider != null)
         {
-             
+
             // Устанавливаем размер коллайдера равным размеру спрайта
             boxCollider.size = spriteRenderer.sprite.bounds.size;
             // Сбрасываем смещение, чтобы оно было по центру спрайта
-            boxCollider.offset = Vector2.zero; 
+            boxCollider.offset = Vector2.zero;
         }
     }
 
@@ -87,8 +90,9 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         }
         _pool = null;
         gameObject.SetActive(false);
+        transform.DOKill(); // Ensure any DOTween animations are stopped when despawned
     }
-    
+
     // В логике игры заменяем Destroy() на возврат в пул
     private void Update()
     {
@@ -105,11 +109,19 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         }
         else
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
             if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
-                _gameManager.LoseLife();
-                _pool.Despawn(this); // Возврат в пул
+                // DOTween animation when reaching the end
+                transform.DOScale(Vector3.zero, 0.3f)
+                    .OnComplete(() =>
+                    {
+                        _gameManager.LoseLife();
+                        _pool.Despawn(this); // Возврат в пул after animation
+                    });
+            }
+            else
+            {
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
             }
         }
     }
@@ -119,8 +131,13 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         if (droppedObject != gameObject) return;
         if (slot != null && slot.acceptedShape == this.shapeData.shapeType)
         {
-            _gameManager.AddScore();
-            _pool.Despawn(this); // Возврат в пул
+            // DOTween animation for correct match
+            transform.DOScale(Vector3.zero, 0.2f)
+                .OnComplete(() =>
+                {
+                    _gameManager.AddScore();
+                    _pool.Despawn(this); // Возврат в пул after animation
+                });
         }
         else
         {
@@ -138,6 +155,10 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
             isReturning = false;
             returnStartPosition = transform.position;
             _boxCollider2D.enabled = false;
+
+            // DOTween jiggle animation when dragging starts
+            transform.DOPunchScale(new Vector3(-0.2f, -0.2f, 0), 0.25f, 1, 0.5f)
+                .SetEase(Ease.OutBounce); // A nice bouncy effect
         }
     }
 
@@ -146,6 +167,7 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         if (droppedObject == gameObject)
         {
             isDragging = false;
+            _boxCollider2D.enabled = true;
         }
     }
 }
