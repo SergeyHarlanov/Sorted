@@ -20,20 +20,25 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField] private Transform[] endPoints;
 
     private float timer;
-    private float currentSpawnInterval; // Для хранения рандомного интервала
-    private bool isSpawningActive = true; // Флаг для управления спауном, если игра не окончена
+    private float currentSpawnInterval;
+    private bool isSpawningActive = true;
 
-    [Inject] private GameManager _gameManager;
-    [Inject] private GameSettings _gameSettings;
-    [Inject] private InputManager _inputManager;
-    
+    // --- Injected Dependencies ---
+    private GameManager _gameManager;
+    private GameSettings _gameSettings;
+    private InputManager _inputManager;
+    private DraggableObjectFactory _draggableObjectFactory; // Factory is now injected
+
     [Inject]
-    private void Construct()
+    private void Construct(GameManager gameManager, GameSettings gameSettings, InputManager inputManager, DraggableObjectFactory draggableObjectFactory)
     {
-        // Получаем первый случайный интервал спауна из GameSettings
+        _gameManager = gameManager;
+        _gameSettings = gameSettings;
+        _inputManager = inputManager;
+        _draggableObjectFactory = draggableObjectFactory; // Assign the injected factory
+
         currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
 
-        // Подписываемся на события GameManager, чтобы останавливать спаун при конце игры
         if (_gameManager != null)
         {
             _gameManager.OnGameOver += OnGameOver;
@@ -41,10 +46,8 @@ public class ObjectSpawner : MonoBehaviour
         }
     }
 
-
     private void OnDestroy()
     {
-        // Отписываемся от событий, чтобы избежать ошибок при уничтожении объекта
         if (_gameManager != null)
         {
             _gameManager.OnGameOver -= OnGameOver;
@@ -54,18 +57,20 @@ public class ObjectSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (!isSpawningActive) return; // Не спауним, если флаг выключен
+        if (!isSpawningActive) return;
 
         timer += Time.deltaTime;
         if (timer >= currentSpawnInterval)
         {
             SpawnObject();
             timer = 0;
-            // Генерируем новый случайный интервал для следующего спауна
             currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
         }
     }
 
+    /// <summary>
+    /// Spawns an object using the DraggableObjectFactory.
+    /// </summary>
     private void SpawnObject()
     {
         if (draggableObjectPrefab == null || shapeDatas.Count == 0 || startPoints.Length == 0)
@@ -74,20 +79,28 @@ public class ObjectSpawner : MonoBehaviour
             return;
         }
 
-        // 1. Выбираем случайный лайн
+        // 1. Select a random lane
         int laneIndex = Random.Range(0, startPoints.Length);
 
-        // 2. Выбираем случайную фигуру
+        // 2. Select random shape data
         ShapeData randomShapeData = shapeDatas[Random.Range(0, shapeDatas.Count)];
 
-        // 3. Создаем объект из префаба
-        DraggableObject newObject = Instantiate(draggableObjectPrefab, startPoints[laneIndex].position, Quaternion.identity);
-        // 4. Инициализируем его данными, используя скорость из GameSettings
-        float randomSpeed = _gameSettings.GetRandomFigureSpeed(); // <- Берем скорость из GameSettings!
-        newObject.Initialize(randomShapeData, startPoints[laneIndex].position, endPoints[laneIndex].position, randomSpeed, _gameManager, _inputManager);
+        // 3. Get a random speed from GameSettings
+        float randomSpeed = _gameSettings.GetRandomFigureSpeed();
+
+        // 4. Use the factory to create the object.
+        // This single method call replaces the previous Instantiate and Initialize calls.
+        _draggableObjectFactory.Create(
+            draggableObjectPrefab,
+            randomShapeData,
+            startPoints[laneIndex].position,
+            endPoints[laneIndex].position,
+            randomSpeed,
+            _gameManager,
+            _inputManager
+        );
     }
 
-    // Методы для обработки окончания игры и остановки спауна
     private void OnGameOver(int finalScore)
     {
         isSpawningActive = false;

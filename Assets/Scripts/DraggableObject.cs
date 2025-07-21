@@ -22,6 +22,8 @@ public class DraggableObject : MonoBehaviour
     // --- Компоненты ---
     private Rigidbody2D rb;
     private SpriteRenderer _spriteRenderer;
+    private BoxCollider2D _boxCollider2D;
+    
     private Camera mainCamera;
 
      private GameManager _gameManager;
@@ -35,17 +37,9 @@ public class DraggableObject : MonoBehaviour
          
          rb.isKinematic = true;
          
-         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-         BoxCollider2D boxCollider = GetComponent<BoxCollider2D>();
-
-         if (spriteRenderer != null && boxCollider != null)
-         {
-             _spriteRenderer = spriteRenderer;
-             // Устанавливаем размер коллайдера равным размеру спрайта
-             boxCollider.size = spriteRenderer.sprite.bounds.size;
-             // Сбрасываем смещение, чтобы оно было по центру спрайта
-             boxCollider.offset = Vector2.zero; 
-         }
+         _spriteRenderer = GetComponent<SpriteRenderer>();
+         _boxCollider2D = GetComponent<BoxCollider2D>();
+   
      }
 
     private void HandleDragCollectEnd(GameObject droppedObject, Slot slot)
@@ -107,6 +101,15 @@ public class DraggableObject : MonoBehaviour
         speed = moveSpeed;
         gameObject.name = shapeData.name; // Устанавливаем имя для удобства отладки
         _gameManager = gameManager;
+        
+        if (_spriteRenderer != null && _boxCollider2D != null)
+        {
+             
+            // Устанавливаем размер коллайдера равным размеру спрайта
+            _boxCollider2D.size = _spriteRenderer.sprite.bounds.size;
+            // Сбрасываем смещение, чтобы оно было по центру спрайта
+            _boxCollider2D.offset = Vector2.zero; 
+        }
     }
 
     private void Update()

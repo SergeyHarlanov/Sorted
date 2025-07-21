@@ -20,5 +20,6 @@ public class GameInstaller : MonoInstaller
         Container.Bind<GameManager>().FromComponentInHierarchy().AsSingle();
         Container.Bind<InputManager>().FromComponentInHierarchy().AsSingle();
         Container.Bind<UIManager>().FromComponentInHierarchy().AsSingle();
+        Container.Bind<DraggableObjectFactory>().AsSingle();
     }
 }
