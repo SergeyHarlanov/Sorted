@@ -34,6 +34,8 @@ public class UIManager : MonoBehaviour
 
     private GameManager _gameManager; // Инжектируем GameManager
 
+    private bool _isShowResulth;
+
     /// <summary>
     /// Конструктор, вызываемый Zenject для внедрения зависимостей.
     /// </summary>
@@ -128,6 +130,9 @@ public class UIManager : MonoBehaviour
     /// <param name="finalScore">Финальный счет игрока.</param>
     private void OnGameOverUI(int finalScore)
     {
+        if (_isShowResulth) return;
+        
+        _isShowResulth = true;
         Debug.Log($"UI: Игра окончена с очками: {finalScore}");
         ShowResultPanel("ИГРА ОКОНЧЕНА!", finalScore, gameOverColor);
     }
@@ -138,6 +143,9 @@ public class UIManager : MonoBehaviour
     /// <param name="finalScore">Финальный счет игрока.</param>
     private void OnGameWinUI(int finalScore)
     {
+        if (_isShowResulth) return;
+        
+        _isShowResulth = true;
         Debug.Log($"UI: Вы победили с очками: {finalScore}");
         ShowResultPanel("ВЫ ПОБЕДИЛИ!", finalScore, winColor);
     }

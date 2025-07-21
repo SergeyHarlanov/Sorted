@@ -874,7 +874,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fa0cd711e2644239120a5f89b7b292f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  draggableObjectPrefab: {fileID: -5442286947216823822, guid: cbdabce22209da84496ec81c35a39377, type: 3}
   shapeDatas:
   - {fileID: 11400000, guid: f10b7cf94d0a20045a7b3811e4042ad0, type: 2}
   - {fileID: 11400000, guid: 4e871a194eed00f44b4e27783a84f757, type: 2}
@@ -1870,64 +1869,13 @@ GameObject:
   m_Component:
   - component: {fileID: 935647136}
   - component: {fileID: 935647135}
-  - component: {fileID: 935647134}
-  - component: {fileID: 935647133}
   m_Layer: 0
-  m_Name: Circle (3)
+  m_Name: Background
   m_TagString: WrongSlot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &935647133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 935647132}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
---- !u!58 &935647134
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 935647132}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
 --- !u!212 &935647135
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2098,10 +2046,9 @@ GameObject:
   - component: {fileID: 944279326}
   - component: {fileID: 944279325}
   - component: {fileID: 944279324}
-  - component: {fileID: 944279327}
   - component: {fileID: 944279328}
   m_Layer: 0
-  m_Name: Circle (2)
+  m_Name: Slots
   m_TagString: CorrectSlot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2142,7 +2089,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 2.68
 --- !u!212 &944279325
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2213,19 +2160,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 470249707}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &944279327
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 944279323}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
 --- !u!114 &944279328
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3213,10 +3147,9 @@ GameObject:
   - component: {fileID: 1550370507}
   - component: {fileID: 1550370506}
   - component: {fileID: 1550370505}
-  - component: {fileID: 1550370508}
   - component: {fileID: 1550370509}
   m_Layer: 0
-  m_Name: Circle
+  m_Name: Slots
   m_TagString: CorrectSlot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3257,7 +3190,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 2.68
 --- !u!212 &1550370506
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3328,19 +3261,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 470249707}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1550370508
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1550370504}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
 --- !u!114 &1550370509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3616,10 +3536,9 @@ GameObject:
   - component: {fileID: 1895545789}
   - component: {fileID: 1895545788}
   - component: {fileID: 1895545787}
-  - component: {fileID: 1895545790}
   - component: {fileID: 1895545791}
   m_Layer: 0
-  m_Name: Circle (1)
+  m_Name: Slots
   m_TagString: WrongSlot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3660,7 +3579,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 2.68
 --- !u!212 &1895545788
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3731,19 +3650,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 470249707}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1895545790
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1895545786}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
 --- !u!114 &1895545791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3923,6 +3829,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _gameSettings: {fileID: 11400000, guid: f84974a6834d6b54996e5e122abfeb90, type: 2}
+  _draggableObjectPrefab: {fileID: -5442286947216823822, guid: cbdabce22209da84496ec81c35a39377, type: 3}
 --- !u!1 &2109379669
 GameObject:
   m_ObjectHideFlags: 0
@@ -3934,10 +3841,9 @@ GameObject:
   - component: {fileID: 2109379670}
   - component: {fileID: 2109379673}
   - component: {fileID: 2109379672}
-  - component: {fileID: 2109379671}
   - component: {fileID: 2109379674}
   m_Layer: 0
-  m_Name: Circle (3)
+  m_Name: Slots
   m_TagString: CorrectSlot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3958,19 +3864,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 470249707}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2109379671
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2109379669}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 768b0d1639174a228d6b85c8a54b1f40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spriteRenderer: {fileID: 0}
 --- !u!58 &2109379672
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -4006,7 +3899,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 2.68
 --- !u!212 &2109379673
 SpriteRenderer:
   m_ObjectHideFlags: 0

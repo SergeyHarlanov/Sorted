@@ -1,48 +1,72 @@
-// Файл: ObjectSpawner.cs
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
+// This class definition remains the same
+public class DraggableObjectPool : MonoPoolableMemoryPool<DraggableObjectSpawnParams, IMemoryPool, DraggableObject> {}
+
 public class ObjectSpawner : MonoBehaviour
 {
-    [Header("Ссылки на объекты")]
-    [Tooltip("Префаб объекта, который будет спауниться")]
-    [SerializeField] private DraggableObject draggableObjectPrefab;
-
-    [Tooltip("Список всех возможных данных о фигурах")]
     [SerializeField] private List<ShapeData> shapeDatas;
-
-    [Header("Позиции лайнов")]
-    [Tooltip("Начальные точки для каждого лайна (слева)")]
     [SerializeField] private Transform[] startPoints;
-    
-    [Tooltip("Конечные точки для каждого лайна (справа)")]
     [SerializeField] private Transform[] endPoints;
 
     private float timer;
     private float currentSpawnInterval;
     private bool isSpawningActive = true;
 
-    // --- Injected Dependencies ---
     private GameManager _gameManager;
     private GameSettings _gameSettings;
     private InputManager _inputManager;
-    private DraggableObjectFactory _draggableObjectFactory; // Factory is now injected
+    private DraggableObjectPool _pool; 
 
     [Inject]
-    private void Construct(GameManager gameManager, GameSettings gameSettings, InputManager inputManager, DraggableObjectFactory draggableObjectFactory)
+    private void Construct(GameManager gameManager, GameSettings gameSettings, InputManager inputManager, DraggableObjectPool pool)
     {
         _gameManager = gameManager;
         _gameSettings = gameSettings;
         _inputManager = inputManager;
-        _draggableObjectFactory = draggableObjectFactory; // Assign the injected factory
+        _pool = pool;
 
         currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
-
         if (_gameManager != null)
         {
             _gameManager.OnGameOver += OnGameOver;
             _gameManager.OnGameWin += OnGameWin;
+        }
+    }
+
+    private void SpawnObject()
+    {
+        if (shapeDatas.Count == 0 || startPoints.Length == 0) return;
+
+        // 1. Prepare the spawn data
+        int laneIndex = Random.Range(0, startPoints.Length);
+        var spawnParams = new DraggableObjectSpawnParams
+        {
+            ShapeData = shapeDatas[Random.Range(0, shapeDatas.Count)],
+            StartPos = startPoints[laneIndex].position,
+            EndPos = endPoints[laneIndex].position,
+            MoveSpeed = _gameSettings.GetRandomFigureSpeed(),
+            GameManager = _gameManager,
+            InputManager = _inputManager
+        };
+
+        // 2. Request an object from the pool, providing both required arguments
+        //    (The parameters and a reference to the pool itself)
+        _pool.Spawn(spawnParams, _pool); // CORRECTED LINE
+    }
+    
+    // The rest of the file remains the same
+    private void Update()
+    {
+        if (!isSpawningActive) return;
+        timer += Time.deltaTime;
+        if (timer >= currentSpawnInterval)
+        {
+            SpawnObject();
+            timer = 0;
+            currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
         }
     }
 
@@ -54,62 +78,6 @@ public class ObjectSpawner : MonoBehaviour
             _gameManager.OnGameWin -= OnGameWin;
         }
     }
-
-    private void Update()
-    {
-        if (!isSpawningActive) return;
-
-        timer += Time.deltaTime;
-        if (timer >= currentSpawnInterval)
-        {
-            SpawnObject();
-            timer = 0;
-            currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
-        }
-    }
-
-    /// <summary>
-    /// Spawns an object using the DraggableObjectFactory.
-    /// </summary>
-    private void SpawnObject()
-    {
-        if (draggableObjectPrefab == null || shapeDatas.Count == 0 || startPoints.Length == 0)
-        {
-            Debug.LogError("Не все настройки спаунера заданы!");
-            return;
-        }
-
-        // 1. Select a random lane
-        int laneIndex = Random.Range(0, startPoints.Length);
-
-        // 2. Select random shape data
-        ShapeData randomShapeData = shapeDatas[Random.Range(0, shapeDatas.Count)];
-
-        // 3. Get a random speed from GameSettings
-        float randomSpeed = _gameSettings.GetRandomFigureSpeed();
-
-        // 4. Use the factory to create the object.
-        // This single method call replaces the previous Instantiate and Initialize calls.
-        _draggableObjectFactory.Create(
-            draggableObjectPrefab,
-            randomShapeData,
-            startPoints[laneIndex].position,
-            endPoints[laneIndex].position,
-            randomSpeed,
-            _gameManager,
-            _inputManager
-        );
-    }
-
-    private void OnGameOver(int finalScore)
-    {
-        isSpawningActive = false;
-        Debug.Log("Спаун остановлен: Game Over");
-    }
-
-    private void OnGameWin(int finalScore)
-    {
-        isSpawningActive = false;
-        Debug.Log("Спаун остановлен: Game Win");
-    }
+    private void OnGameOver(int finalScore) => isSpawningActive = false;
+    private void OnGameWin(int finalScore) => isSpawningActive = false;
 }

@@ -21,6 +21,8 @@ public class InputManager : MonoBehaviour
     private void Start()
     {
         mainCamera = Camera.main;
+        
+  
     }
 
     private void Update()
@@ -88,7 +90,7 @@ public class InputManager : MonoBehaviour
         if (hit.collider)
         {
             Slot slot = hit.collider.gameObject.GetComponent<Slot>();
-            
+//            Debug.Log("DraggableObject HandleDragCollectEnd-1"+slot.acceptedShape);
             if (hit.collider != null && slot && 
                 slot.acceptedShape == currentDraggedObject.GetComponent<DraggableObject>().ShapeData.shapeType)
             {
@@ -101,6 +103,7 @@ public class InputManager : MonoBehaviour
             }
             else
             {
+                Debug.Log("DraggableObject HandleDragCollectEnd-1"+hit.collider.name);
                 // Вызываем событие окончания перетаскивания
                 OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
         
