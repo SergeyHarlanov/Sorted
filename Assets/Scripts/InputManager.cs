@@ -4,11 +4,9 @@ using Zenject;
 
 public class InputManager : MonoBehaviour
 {
-    // Делегаты для событий ввода
     public delegate void DragEvent(GameObject draggedObject);
     public delegate void DropEvent(GameObject droppedObject);
     
-    // События
     public event DragEvent OnDragStart;
     public event DragEvent OnDragEnd;
     public event Action<GameObject,Slot> OnDragCollectEnd;
@@ -21,8 +19,6 @@ public class InputManager : MonoBehaviour
     private void Start()
     {
         mainCamera = Camera.main;
-        
-  
     }
 
     private void Update()
@@ -58,7 +54,6 @@ public class InputManager : MonoBehaviour
             Vector2.zero);
         if (hit.collider != null && hit.collider.gameObject.GetComponent<DraggableObject>() != null)
         {
-          
             currentDraggedObject = hit.collider.gameObject;
             isDragging = true;
             
@@ -90,11 +85,9 @@ public class InputManager : MonoBehaviour
         if (hit.collider)
         {
             Slot slot = hit.collider.gameObject.GetComponent<Slot>();
-//            Debug.Log("DraggableObject HandleDragCollectEnd-1"+slot.acceptedShape);
             if (hit.collider != null && slot && 
                 slot.acceptedShape == currentDraggedObject.GetComponent<DraggableObject>().ShapeData.shapeType)
             {
-                Debug.Log("DraggableObject HandleDragCollectEnd0"+slot.acceptedShape);
                 OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
         
                 currentDraggedObject = null;
@@ -103,8 +96,6 @@ public class InputManager : MonoBehaviour
             }
             else
             {
-                Debug.Log("DraggableObject HandleDragCollectEnd-1"+hit.collider.name);
-                // Вызываем событие окончания перетаскивания
                 OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
         
                 currentDraggedObject = null;
@@ -119,19 +110,5 @@ public class InputManager : MonoBehaviour
             currentDraggedObject = null;
             isDragging = false;
         }
-       
-  
-    }
-
-    // Метод для проверки, происходит ли сейчас перетаскивание
-    public bool IsDragging()
-    {
-        return isDragging;
-    }
-
-    // Метод для получения текущего перетаскиваемого объекта
-    public GameObject GetCurrentDraggedObject()
-    {
-        return currentDraggedObject;
     }
 }

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-// This class definition remains the same
 public class DraggableObjectPool : MonoPoolableMemoryPool<DraggableObjectSpawnParams, IMemoryPool, DraggableObject> {}
 
 public class ObjectSpawner : MonoBehaviour
@@ -52,12 +51,9 @@ public class ObjectSpawner : MonoBehaviour
             InputManager = _inputManager
         };
 
-        // 2. Request an object from the pool, providing both required arguments
-        //    (The parameters and a reference to the pool itself)
-        _pool.Spawn(spawnParams, _pool); // CORRECTED LINE
+        _pool.Spawn(spawnParams, _pool); 
     }
     
-    // The rest of the file remains the same
     private void Update()
     {
         if (!isSpawningActive) return;

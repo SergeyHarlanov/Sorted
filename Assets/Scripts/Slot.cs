@@ -1,4 +1,3 @@
-// Файл: Slot.cs
 using UnityEngine;
 
 public class Slot : MonoBehaviour

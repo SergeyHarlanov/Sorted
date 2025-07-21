@@ -100,14 +100,11 @@ public class UIManager : MonoBehaviour
             
             if (newScore < requiredToWin)
             {
-                // Если очков не хватает, используем красный цвет и показываем, сколько осталось
-                scoreText.text = $"{newScore} / {requiredToWin - newScore}";
+                scoreText.text = $"Score {newScore} / {requiredToWin }";
             }
             else
             {
-                // Если очков достаточно, используем обычный цвет и показываем только текущий счёт
                 scoreText.color = scoreEnoughColor;
-              //  scoreText.text = $"Score: {newScore}"; 
             }
         }
     }
@@ -120,7 +117,7 @@ public class UIManager : MonoBehaviour
     {
         if (livesText != null)
         {
-            livesText.text = $"{newLives}";
+            livesText.text = $"Lives {newLives}";
         }
     }
 

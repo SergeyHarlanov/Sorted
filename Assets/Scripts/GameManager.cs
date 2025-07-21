@@ -4,10 +4,7 @@ using Zenject; // Обязательно должен быть!
 
 public class GameManager : MonoBehaviour
 {
-    // Приватное поле для инжектированных настроек игры.
     private GameSettings _gameSettings; 
-
-    // Публичные события для оповещения UI и других систем об изменениях
     public event Action<int> OnScoreChanged;
     public event Action<int> OnLivesChanged;
     public event Action<int> OnGameOver;
@@ -30,8 +27,6 @@ public class GameManager : MonoBehaviour
         _gameSettings = gameSettings;
         Debug.Log("GameSettings успешно инжектированы в GameManager.");
 
-        // 🔥 Инициализация игровых переменных после инъекций 🔥
-        // Это место идеально подходит для инициализации, которая требует _gameSettings
         InitializeGameData(); 
     }
 
@@ -73,7 +68,6 @@ public class GameManager : MonoBehaviour
         Debug.Log("Score: " + CurrentScore);
         OnScoreChanged?.Invoke(CurrentScore); // Вызываем событие для обновления UI
 
-        // Проверяем, достигнута ли цель победы
         if (CurrentScore >= FiguresRequiredToWin) 
         {
             GameWin();
@@ -87,7 +81,7 @@ public class GameManager : MonoBehaviour
     {
         CurrentLives--;
         Debug.Log("Lives left: " + CurrentLives);
-        OnLivesChanged?.Invoke(CurrentLives); // Вызываем событие для обновления UI
+        OnLivesChanged?.Invoke(CurrentLives); 
 
         // Проверяем, закончились ли жизни
         if (CurrentLives <= 0)
@@ -102,12 +96,7 @@ public class GameManager : MonoBehaviour
     private void GameOver()
     {
         Debug.Log("Game Over! Final Score: " + CurrentScore);
-        OnGameOver?.Invoke(CurrentScore); // Вызываем событие
-        // Здесь можно добавить логику для:
-        // - Паузы игры
-        // - Отображения экрана "Game Over"
-        // - Сохранения рекордов
-        // - Перезапуска сцены
+        OnGameOver?.Invoke(CurrentScore); 
     }
 
     /// <summary>
@@ -116,10 +105,6 @@ public class GameManager : MonoBehaviour
     private void GameWin()
     {
         Debug.Log("You Win! Final Score: " + CurrentScore);
-        OnGameWin?.Invoke(CurrentScore); // Вызываем событие
-        // Здесь можно добавить логику для:
-        // - Паузы игры
-        // - Отображения экрана "Победа"
-        // - Перехода на следующий уровень
+        OnGameWin?.Invoke(CurrentScore); 
     }
 }
