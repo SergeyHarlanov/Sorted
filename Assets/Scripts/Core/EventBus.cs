@@ -44,7 +44,7 @@ public class EventBus
         OnDragEnd?.Invoke(droppedObject);
     }
 
-    public void PublishDragCollectEnd(GameObject droppedObject, Slot slot) // Исправлено: теперь принимает и передает параметры
+    public void PublishDragCollectEnd(GameObject droppedObject, Slot slot) 
     {
         OnDragCollectEnd?.Invoke(droppedObject, slot);
     }

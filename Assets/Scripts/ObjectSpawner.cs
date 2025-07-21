@@ -6,13 +6,13 @@ public class DraggableObjectPool : MonoPoolableMemoryPool<DraggableObjectSpawnPa
 
 public class ObjectSpawner : MonoBehaviour
 {
-    [SerializeField] private List<ShapeData> shapeDatas;
-    [SerializeField] private Transform[] startPoints;
-    [SerializeField] private Transform[] endPoints;
+    [SerializeField] private List<ShapeData> _shapeDatas;
+    [SerializeField] private Transform[] _startPoints;
+    [SerializeField] private Transform[] _endPoints;
 
-    private float timer;
-    private float currentSpawnInterval;
-    private bool isSpawningActive = true;
+    private float _timer;
+    private float _currentSpawnInterval;
+    private bool _isSpawningActive = true;
 
     private EventBus _eventBus;
     private GameManager _gameManager;
@@ -29,22 +29,22 @@ public class ObjectSpawner : MonoBehaviour
         _pool = pool;
         _eventBus = eventBus;
 
-        currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
+        _currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
         
-        _eventBus.OnGameOver += OnGameOver;
-        _eventBus.OnGameWin += OnGameWin;
+        _eventBus.OnGameOver += _OnGameOver;
+        _eventBus.OnGameWin += _OnGameWin;
     }
 
-    private void SpawnObject()
+    private void _SpawnObject()
     {
-        if (shapeDatas.Count == 0 || startPoints.Length == 0) return;
+        if (_shapeDatas.Count == 0 || _startPoints.Length == 0) return;
 
-        int laneIndex = Random.Range(0, startPoints.Length);
+        int laneIndex = Random.Range(0, _startPoints.Length);
         var spawnParams = new DraggableObjectSpawnParams
         {
-            ShapeData = shapeDatas[Random.Range(0, shapeDatas.Count)],
-            StartPos = startPoints[laneIndex].position,
-            EndPos = endPoints[laneIndex].position,
+            ShapeData = _shapeDatas[Random.Range(0, _shapeDatas.Count)],
+            StartPos = _startPoints[laneIndex].position,
+            EndPos = _endPoints[laneIndex].position,
             MoveSpeed = _gameSettings.GetRandomFigureSpeed(),
             GameManager = _gameManager,
             InputManager = _inputManager
@@ -55,32 +55,32 @@ public class ObjectSpawner : MonoBehaviour
     
     private void Update()
     {
-        if (!isSpawningActive) return;
-        timer += Time.deltaTime;
-        if (timer >= currentSpawnInterval)
+        if (!_isSpawningActive) return;
+        _timer += Time.deltaTime;
+        if (_timer >= _currentSpawnInterval)
         {
-            SpawnObject();
-            timer = 0;
-            currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
+            _SpawnObject();
+            _timer = 0;
+            _currentSpawnInterval = _gameSettings.GetRandomFigureSpawnTimeout();
         }
     }
 
-    private void OnGameOver(int finalScore)
+    private void _OnGameOver(int finalScore)
     {
-        isSpawningActive = false;
+        _isSpawningActive = false;
     }
 
-    private void OnGameWin(int finalScore)
+    private void _OnGameWin(int finalScore)
     {
-        isSpawningActive = false;
+        _isSpawningActive = false;
     }
 
-    private void OnDestroy()
+    private void _OnDestroy()
     {
         if (_eventBus != null)
         {
-            _eventBus.OnGameOver -= OnGameOver;
-            _eventBus.OnGameWin -= OnGameWin;
+            _eventBus.OnGameOver -= _OnGameOver;
+            _eventBus.OnGameWin -= _OnGameWin;
         }
     }
 }

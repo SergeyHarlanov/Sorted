@@ -4,12 +4,12 @@ using DG.Tweening;
 
 public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnParams, IMemoryPool>
 {
-    private ShapeData shapeData;
-    private bool isDragging = false;
-    private bool isReturning = false;
-    private Vector3 targetPosition;
-    private Vector3 returnStartPosition;
-    private float speed;
+    private ShapeData _shapeData;
+    private bool _isDragging = false;
+    private bool _isReturning = false;
+    private Vector3 _targetPosition;
+    private Vector3 _returnStartPosition;
+    private float _speed;
 
     private Rigidbody2D _rb;
     private SpriteRenderer _spriteRenderer;
@@ -38,25 +38,25 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
     public void OnSpawned(DraggableObjectSpawnParams p, IMemoryPool pool)
     {
         _pool = pool;
-        shapeData = p.ShapeData;
-        _spriteRenderer.sprite = shapeData.sprite;
+        _shapeData = p.ShapeData;
+        _spriteRenderer.sprite = _shapeData.sprite;
         transform.position = p.StartPos;
-        targetPosition = p.EndPos;
-        speed = p.MoveSpeed;
+        _targetPosition = p.EndPos;
+        _speed = p.MoveSpeed;
         _gameManager = p.GameManager;
         _inputManager = p.InputManager;
 
-        _eventBus.OnDragStart += HandleDragStart;
-        _eventBus.OnDragEnd += HandleDragEnd;
-        _eventBus.OnDragCollectEnd += HandleDragCollectEnd; // Исправлено: прямая подписка
+        _eventBus.OnDragStart += _HandleDragStart;
+        _eventBus.OnDragEnd += _HandleDragEnd;
+        _eventBus.OnDragCollectEnd += _HandleDragCollectEnd;
         _boxCollider2D = GetComponent<BoxCollider2D>();
-        _boxCollider2D.enabled = true; // Убедиться, что коллайдер включен при спавне
+        _boxCollider2D.enabled = true;
 
         _boxCollider2D.size = _spriteRenderer.sprite.bounds.size;
         _boxCollider2D.offset = Vector2.zero;
 
-        isDragging = false;
-        isReturning = false;
+        _isDragging = false;
+        _isReturning = false;
         transform.localScale = _startSize;
     }
 
@@ -64,47 +64,41 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
     {
         if (_eventBus != null)
         {
-            _eventBus.OnDragStart -= HandleDragStart;
-            _eventBus.OnDragEnd -= HandleDragEnd;
-            _eventBus.OnDragCollectEnd -= HandleDragCollectEnd; // Исправлено
+            _eventBus.OnDragStart -= _HandleDragStart;
+            _eventBus.OnDragEnd -= _HandleDragEnd;
+            _eventBus.OnDragCollectEnd -= _HandleDragCollectEnd;
         }
     }
 
     private void Update()
     {
-        if (!isDragging && !isReturning)
+        if (!_isDragging && !_isReturning)
         {
-            MoveTowardsTarget();
+            _MoveTowardsTarget();
         }
 
-        if (isReturning)
+        if (_isReturning)
         {
-            ReturnToStartPosition();
+            _ReturnToStartPosition();
         }
     }
 
-    private void SetRandomRotation()
+    private void _MoveTowardsTarget()
     {
-        transform.rotation = Quaternion.Euler(0, 0, Random.Range(0, 360));
-    }
+        transform.position = Vector3.MoveTowards(transform.position, _targetPosition, _speed * Time.deltaTime);
 
-    private void MoveTowardsTarget()
-    {
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
-
-        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        if (Vector3.Distance(transform.position, _targetPosition) < 0.1f)
         {
             _gameManager.LoseLife();
             _pool.Despawn(this);
         }
     }
 
-
-    private void HandleDragCollectEnd(GameObject droppedObject, Slot slot) // Теперь параметры приходят напрямую
+    private void _HandleDragCollectEnd(GameObject droppedObject, Slot slot)
     {
         if (droppedObject != gameObject) return;
 
-        if (slot != null && slot.acceptedShape == this.shapeData.shapeType)
+        if (slot != null && slot.acceptedShape == this._shapeData.shapeType)
         {
             transform.DOScale(Vector3.zero, 0.2f)
                 .OnComplete(() =>
@@ -116,41 +110,41 @@ public class DraggableObject : MonoBehaviour, IPoolable<DraggableObjectSpawnPara
         else
         {
             if (slot != null) _gameManager.LoseLife();
-            HandleDragEnd(droppedObject); // Объект возвращается на место или удаляется
+            _HandleDragEnd(droppedObject);
         }
     }
 
-    private void HandleDragStart(GameObject draggedObject)
+    private void _HandleDragStart(GameObject draggedObject)
     {
         if (draggedObject == gameObject)
         {
-            isDragging = true;
-            isReturning = false;
-            returnStartPosition = transform.position;
-            _boxCollider2D.enabled = false; // Отключаем коллайдер при начале перетаскивания
+            _isDragging = true;
+            _isReturning = false;
+            _returnStartPosition = transform.position;
+            _boxCollider2D.enabled = false;
 
-            transform.DOPunchScale(new Vector3(-0.2f, -0.2f, 0), 0.25f, 1, 0.5f)
+            transform.DOPunchScale(new Vector3(-0.1f, -0.1f, 0), 0.25f, 1, 0.1f)
                 .SetEase(Ease.OutBounce);
         }
     }
 
-    private void HandleDragEnd(GameObject droppedObject)
+    private void _HandleDragEnd(GameObject droppedObject)
     {
         if (droppedObject == gameObject)
         {
-            isDragging = false;
-            isReturning = true;
-            _boxCollider2D.enabled = true; // Включаем коллайдер после окончания перетаскивания
+            _isDragging = false;
+            _isReturning = true;
+            _boxCollider2D.enabled = true;
         }
     }
 
-    private void ReturnToStartPosition()
+    private void _ReturnToStartPosition()
     {
-        transform.position = Vector3.MoveTowards(transform.position, returnStartPosition, speed * Time.deltaTime * 2);
+        transform.position = Vector3.MoveTowards(transform.position, _returnStartPosition, _speed * Time.deltaTime * 2);
 
-        if (Vector3.Distance(transform.position, returnStartPosition) < 0.01f)
+        if (Vector3.Distance(transform.position, _returnStartPosition) < 0.01f)
         {
-            isReturning = false;
+            _isReturning = false;
         }
     }
 

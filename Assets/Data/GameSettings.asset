@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1078548e2d22cf428ba60671791e6b7, type: 3}
   m_Name: GameSettings
   m_EditorClassIdentifier: 
-  minFiguresToWin: 10
-  maxFiguresToWin: 20
-  minFigureSpawnTimeout: 0.3
-  maxFigureSpawnTimeout: 1
-  minFigureSpeed: 2
-  maxFigureSpeed: 5
-  initialLives: 50
+  _minFiguresToWin: 10
+  _maxFiguresToWin: 20
+  _minFigureSpawnTimeout: 0.3
+  _maxFigureSpawnTimeout: 1
+  _minFigureSpeed: 2
+  _maxFigureSpeed: 5
+  _initialLives: 40

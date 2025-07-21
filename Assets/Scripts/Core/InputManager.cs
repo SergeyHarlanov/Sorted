@@ -5,9 +5,9 @@ using Zenject;
 public class InputManager : MonoBehaviour
 {
     private EventBus _eventBus;
-    private GameObject currentDraggedObject;
-    private Camera mainCamera;
-    private bool isDragging = false;
+    private GameObject _currentDraggedObject;
+    private Camera _mainCamera;
+    private bool _isDragging = false;
 
     [Inject]
     public void Construct(EventBus eventBus)
@@ -17,7 +17,7 @@ public class InputManager : MonoBehaviour
 
     private void Start()
     {
-        mainCamera = Camera.main;
+        _mainCamera = Camera.main;
     }
 
     private void Update()
@@ -32,12 +32,12 @@ public class InputManager : MonoBehaviour
             StartDrag();
         }
 
-        if (isDragging && Input.GetMouseButton(0))
+        if (_isDragging && Input.GetMouseButton(0))
         {
             ContinueDrag();
         }
 
-        if (isDragging && Input.GetMouseButtonUp(0))
+        if (_isDragging && Input.GetMouseButtonUp(0))
         {
             EndDrag();
         }
@@ -46,7 +46,7 @@ public class InputManager : MonoBehaviour
     private void StartDrag()
     {
         RaycastHit2D hit = Physics2D.Raycast(
-            mainCamera.ScreenToWorldPoint(Input.mousePosition),
+            _mainCamera.ScreenToWorldPoint(Input.mousePosition),
             Vector2.zero);
 
         if (hit.collider != null)
@@ -54,47 +54,47 @@ public class InputManager : MonoBehaviour
             DraggableObject draggable = hit.collider.GetComponent<DraggableObject>();
             if (draggable != null)
             {
-                currentDraggedObject = hit.collider.gameObject;
-                isDragging = true;
-                _eventBus.PublishDragStart(currentDraggedObject);
+                _currentDraggedObject = hit.collider.gameObject;
+                _isDragging = true;
+                _eventBus.PublishDragStart(_currentDraggedObject);
             }
         }
     }
 
     private void ContinueDrag()
     {
-        if (currentDraggedObject == null) return;
+        if (_currentDraggedObject == null) return;
 
-        Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePosition = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0;
-        currentDraggedObject.transform.position = mousePosition;
+        _currentDraggedObject.transform.position = mousePosition;
 
-        _eventBus.PublishDrag(currentDraggedObject);
+        _eventBus.PublishDrag(_currentDraggedObject);
     }
 
     private void EndDrag()
     {
-        if (currentDraggedObject == null) return;
+        if (_currentDraggedObject == null) return;
 
         RaycastHit2D hit = Physics2D.Raycast(
-            mainCamera.ScreenToWorldPoint(Input.mousePosition),
+            _mainCamera.ScreenToWorldPoint(Input.mousePosition),
             Vector2.zero);
 
         if (hit.collider)
         {
             Slot slot = hit.collider.gameObject.GetComponent<Slot>();
             // Теперь PublishDragCollectEnd будет всегда вызываться с правильными параметрами
-            _eventBus.PublishDragCollectEnd(currentDraggedObject, slot); // Исправлено: передаем slot
+            _eventBus.PublishDragCollectEnd(_currentDraggedObject, slot); // Исправлено: передаем slot
 
-            currentDraggedObject = null;
-            isDragging = false;
+            _currentDraggedObject = null;
+            _isDragging = false;
         }
         else
         {
-            _eventBus.PublishDragEnd(currentDraggedObject);
+            _eventBus.PublishDragEnd(_currentDraggedObject);
 
-            currentDraggedObject = null;
-            isDragging = false;
+            _currentDraggedObject = null;
+            _isDragging = false;
         }
     }
 }
