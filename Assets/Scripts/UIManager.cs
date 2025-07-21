@@ -12,7 +12,7 @@ public class UIManager : MonoBehaviour
     [Header("UI Элементы")]
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI livesText;
-
+    [SerializeField] private Button _restartButton;
     [Header("Панель результатов")]
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TextMeshProUGUI combinedResultText; // Единый текстовый элемент для заголовка и счета
@@ -44,6 +44,7 @@ public class UIManager : MonoBehaviour
             GameManager.Instance.OnLivesChanged += UpdateLivesDisplay;
             GameManager.Instance.OnGameOver += ShowResultScreen;
             GameManager.Instance.OnGameWin += ShowResultScreen;
+            _restartButton.onClick.AddListener(RestartGame);
 
             // Обновляем UI при старте
             UpdateScoreDisplay(GameManager.Instance.score);
@@ -60,6 +61,8 @@ public class UIManager : MonoBehaviour
             GameManager.Instance.OnLivesChanged -= UpdateLivesDisplay;
             GameManager.Instance.OnGameOver -= ShowResultScreen;
             GameManager.Instance.OnGameWin -= ShowResultScreen;
+            
+            _restartButton.onClick.RemoveListener(RestartGame);
         }
     }
 
