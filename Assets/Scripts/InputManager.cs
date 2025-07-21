@@ -106,7 +106,7 @@ public class InputManager : MonoBehaviour
             if (hit.collider != null && slot && 
                 slot.acceptedShape == currentDraggedObject.GetComponent<DraggableObject>().ShapeData.shapeType)
             {
-                Debug.Log("DraggableObject HandleDragCollectEnd0");
+                Debug.Log("DraggableObject HandleDragCollectEnd0"+slot.acceptedShape);
                 OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
         
                 currentDraggedObject = null;
@@ -116,7 +116,7 @@ public class InputManager : MonoBehaviour
             else
             {
                 // Вызываем событие окончания перетаскивания
-                OnDragEnd?.Invoke(currentDraggedObject);
+                OnDragCollectEnd?.Invoke(currentDraggedObject, slot);
         
                 currentDraggedObject = null;
                 isDragging = false;

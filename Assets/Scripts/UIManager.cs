@@ -3,6 +3,7 @@ using UnityEngine;
 using TMPro; // Для работы с TextMeshPro
 using UnityEngine.UI; // Для работы с UI элементами
 using UnityEngine.SceneManagement; // Для перезагрузки сцены
+using System.Collections; // Для корутин
 
 public class UIManager : MonoBehaviour
 {
@@ -11,10 +12,13 @@ public class UIManager : MonoBehaviour
     [Header("UI Элементы")]
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI livesText;
-    [SerializeField] private GameObject gameOverPanel;
-    [SerializeField] private TextMeshProUGUI gameOverScoreText;
-    [SerializeField] private GameObject winPanel;
-    [SerializeField] private TextMeshProUGUI winScoreText;
+
+    [Header("Панель результатов")]
+    [SerializeField] private GameObject resultPanel;
+    [SerializeField] private TextMeshProUGUI combinedResultText; // Единый текстовый элемент для заголовка и счета
+    [SerializeField] private Image resultPanelBackground; // Фон панели для изменения цвета
+    [SerializeField] private Color winColor = Color.green; // Цвет для победы
+    [SerializeField] private Color loseColor = Color.red; // Цвет для поражения
 
     private void Awake()
     {
@@ -27,9 +31,8 @@ public class UIManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        // Изначально скрываем все панели
-        gameOverPanel.SetActive(false);
-        winPanel.SetActive(false);
+        // Изначально скрываем панель результатов
+        resultPanel.SetActive(false);
     }
 
     private void Start()
@@ -39,8 +42,8 @@ public class UIManager : MonoBehaviour
         {
             GameManager.Instance.OnScoreChanged += UpdateScoreDisplay;
             GameManager.Instance.OnLivesChanged += UpdateLivesDisplay;
-            GameManager.Instance.OnGameOver += ShowGameOverScreen;
-            GameManager.Instance.OnGameWin += ShowWinScreen;
+            GameManager.Instance.OnGameOver += ShowResultScreen;
+            GameManager.Instance.OnGameWin += ShowResultScreen;
 
             // Обновляем UI при старте
             UpdateScoreDisplay(GameManager.Instance.score);
@@ -55,8 +58,8 @@ public class UIManager : MonoBehaviour
         {
             GameManager.Instance.OnScoreChanged -= UpdateScoreDisplay;
             GameManager.Instance.OnLivesChanged -= UpdateLivesDisplay;
-            GameManager.Instance.OnGameOver -= ShowGameOverScreen;
-            GameManager.Instance.OnGameWin -= ShowWinScreen;
+            GameManager.Instance.OnGameOver -= ShowResultScreen;
+            GameManager.Instance.OnGameWin -= ShowResultScreen;
         }
     }
 
@@ -76,27 +79,41 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ShowGameOverScreen(int finalScore)
+    // Универсальный метод для показа экрана результатов
+    public void ShowResultScreen(int finalScore)
     {
-        if (gameOverPanel != null)
+        if (resultPanel != null)
         {
-            gameOverPanel.SetActive(true);
-            if (gameOverScoreText != null)
-            {
-                gameOverScoreText.text = "Final Score: " + finalScore;
-            }
-        }
-        Time.timeScale = 0f; // Останавливаем игру
-    }
+            resultPanel.SetActive(true);
 
-    public void ShowWinScreen(int finalScore)
-    {
-        if (winPanel != null)
-        {
-            winPanel.SetActive(true);
-            if (winScoreText != null)
+            // Определяем, это победа или поражение
+            // Используем условие, что победа достигается, если finalScore >= scoreToWin
+            bool isWin = (finalScore >= GameManager.Instance.scoreToWin);
+
+            string title;
+            Color panelColor;
+
+            if (isWin)
             {
-                winScoreText.text = "Score: " + finalScore;
+                title = "Победа!";
+                panelColor = winColor;
+            }
+            else
+            {
+                title = "Поражение";
+                panelColor = loseColor;
+            }
+
+            // Объединяем заголовок и счет в одну строку
+            if (combinedResultText != null)
+            {
+                combinedResultText.text = $"{title}\nОчки: {finalScore}";
+            }
+            
+            // Устанавливаем цвет фона панели
+            if (resultPanelBackground != null)
+            {
+                resultPanelBackground.color = panelColor;
             }
         }
         Time.timeScale = 0f; // Останавливаем игру

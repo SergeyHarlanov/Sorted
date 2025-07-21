@@ -55,7 +55,7 @@ public class DraggableObject : MonoBehaviour
     private void HandleDragCollectEnd(GameObject droppedObject, Slot slot)
     {
         if (droppedObject != gameObject) return;
-        Debug.Log("DraggableObject HandleDragCollectEnd1"+isDragging);
+        Debug.Log("DraggableObject HandleDragCollectEnd1"+(slot.acceptedShape == this.shapeData.shapeType));
         // Столкновение происходит только когда мы отпускаем объект
       //  if (isDragging) return;
 
@@ -73,8 +73,11 @@ public class DraggableObject : MonoBehaviour
                 // Неправильный слот
                 GameManager.Instance.LoseLife();
                 Debug.Log("Неправильно! -1 жизнь.");
+                
+                // Вызываем событие окончания перетаскивания
+                HandleDragEnd(droppedObject);
                 // Тут можно добавить эффект взрыва
-                Destroy(gameObject);
+            
             }
         }
     }
