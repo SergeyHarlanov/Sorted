@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 262763203}
   - component: {fileID: 262763202}
   m_Layer: 0
-  m_Name: Line
+  m_Name: LineMiddle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -415,14 +415,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 935e1f2c45c144ee8a6fc3b1e3a29056, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scoreText: {fileID: 1470893586}
-  livesText: {fileID: 1030412609}
-  resultPanel: {fileID: 966553850}
-  resultText: {fileID: 292705037}
-  resultPanelBackground: {fileID: 966553852}
-  restartButton: {fileID: 571626702}
-  gameOverColor: {r: 1, g: 0, b: 0, a: 1}
-  winColor: {r: 0, g: 1, b: 0, a: 1}
+  _scoreText: {fileID: 1470893586}
+  _livesText: {fileID: 1030412609}
+  _resultPanel: {fileID: 966553850}
+  _resultText: {fileID: 292705037}
+  _resultPanelBackground: {fileID: 966553852}
+  _restartButton: {fileID: 571626702}
+  _gameOverColor: {r: 1, g: 0, b: 0, a: 1}
+  _winColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &292705035
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,7 +435,7 @@ GameObject:
   - component: {fileID: 292705038}
   - component: {fileID: 292705037}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: HeaderResult
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -827,16 +827,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fa0cd711e2644239120a5f89b7b292f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shapeDatas:
-  - {fileID: 11400000, guid: f10b7cf94d0a20045a7b3811e4042ad0, type: 2}
+  _shapeDatas:
   - {fileID: 11400000, guid: 4e871a194eed00f44b4e27783a84f757, type: 2}
-  - {fileID: 11400000, guid: 3dd9784a6529cc5468513f6fd49cb823, type: 2}
+  - {fileID: 11400000, guid: f10b7cf94d0a20045a7b3811e4042ad0, type: 2}
   - {fileID: 11400000, guid: 4e2dc03f29b56aa438f0daa4adbf5b8a, type: 2}
-  startPoints:
+  - {fileID: 11400000, guid: 3dd9784a6529cc5468513f6fd49cb823, type: 2}
+  _startPoints:
   - {fileID: 1618326086}
   - {fileID: 269489853}
   - {fileID: 463201848}
-  endPoints:
+  _endPoints:
   - {fileID: 2004217340}
   - {fileID: 1417601240}
   - {fileID: 2143451388}
@@ -1659,7 +1659,7 @@ GameObject:
   - component: {fileID: 792649861}
   - component: {fileID: 792649862}
   m_Layer: 0
-  m_Name: Line (2)
+  m_Name: LineDown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1910,7 +1910,7 @@ GameObject:
   - component: {fileID: 941055748}
   - component: {fileID: 941055749}
   m_Layer: 0
-  m_Name: Line (1)
+  m_Name: LineUp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2215,7 +2215,7 @@ GameObject:
   - component: {fileID: 1030412610}
   - component: {fileID: 1030412609}
   m_Layer: 0
-  m_Name: Text (TMP)
+  m_Name: HpText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2852,7 +2852,7 @@ GameObject:
   - component: {fileID: 1470893587}
   - component: {fileID: 1470893586}
   m_Layer: 0
-  m_Name: Text (TMP)
+  m_Name: ScoreText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3005,8 +3005,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 262763203}
   - {fileID: 941055748}
+  - {fileID: 262763203}
   - {fileID: 792649861}
   m_Father: {fileID: 1908669963}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
